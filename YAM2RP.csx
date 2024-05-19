@@ -9,6 +9,8 @@ using UndertaleModLib.Models;
 using System.Drawing;
 using System.Collections;
 using System.Text.RegularExpressions;
+using UndertaleModLib.Util;
+using System.Text.Json;
 
 EnsureDataLoaded();
 string sourceFolder = PromptChooseDirectory();
@@ -20,7 +22,7 @@ string graphicsPath = Path.Combine(sourceFolder, "Graphics");
 string maskPath = Path.Combine(sourceFolder, "Masks");
 string objectPath = Path.Combine(sourceFolder, "Objects");
 string roomPath = Path.Combine(sourceFolder, "Rooms");
-string scriptPath = Path.Combine(sourceFolder, "Scripts");
+string scriptPath = Path.Combine(sourceFolder, "Code");
 
 HashSet<uint> usedInstanceIDs = new HashSet<uint>();
 HashSet<uint> usedTileIDs = new HashSet<uint>();
@@ -582,12 +584,12 @@ public void ImportGraphics() {
     }
     string CheckValidity()
     {
-        bool recursiveCheck = ScriptQuestion(@"This script imports all sprites in all subdirectories recursively.
+        /*bool recursiveCheck = ScriptQuestion(@"This script imports all sprites in all subdirectories recursively.
 If an image file is in a folder named ""Backgrounds"", then the image will be imported as a background.
 Otherwise, the image will be imported as a sprite.
 Do you want to continue?");
         if (!recursiveCheck)
-            throw new ScriptException("Script cancelled.");
+            throw new ScriptException("Script cancelled.");*/
 
         // Get import folder
         string importFolder = graphicsPath;
@@ -705,22 +707,13 @@ public void ImportScripts() {
     else if (!dirFiles.Any(x => x.EndsWith(".gml")))
         throw new ScriptException("The scripts folder doesn't contain any GML files.");
 
-    SetProgressBar(null, "Importing Scripts...", 0, dirFiles.Length);
-    StartProgressBarUpdater();
+    foreach (string file in dirFiles)
+    {
+        IncrementProgress();
 
-    SyncBinding("Strings, Code, CodeLocals, Scripts, GlobalInitScripts, GameObjects, Functions, Variables", true);
-    await Task.Run(() => {
-        foreach (string file in dirFiles)
-        {
-            IncrementProgress();
+        ImportGMLFile(file, true, false, true);
+    }
 
-            ImportGMLFile(file, true, false, true);
-        }
-    });
-    DisableAllSyncBindings();
-
-    await StopProgressBarUpdater();
-    HideProgressBar();
     ScriptMessage("Script import complete!");
 }
 
@@ -792,41 +785,33 @@ public void ImportMasks() {
             throw new ScriptException(spriteName + " is missing one or more indexes. The detected missing index is: " + prevFrameName);
     }
 
-    SetProgressBar(null, "Files", 0, dirFiles.Length);
-    StartProgressBarUpdater();
+    foreach (string file in dirFiles)
+    {
 
-    await Task.Run(() => {
-        foreach (string file in dirFiles)
+        string FileNameWithExtension = Path.GetFileName(file);
+        if (!FileNameWithExtension.EndsWith(".png"))
+            continue; // Restarts loop if file is not a valid mask asset.
+        string stripped = Path.GetFileNameWithoutExtension(file);
+        int lastUnderscore = stripped.LastIndexOf('_');
+        string spriteName = stripped.Substring(0, lastUnderscore);
+        int frame = Int32.Parse(stripped.Substring(lastUnderscore + 1));
+        UndertaleSprite sprite = Data.Sprites.ByName(spriteName);
+        int collision_mask_count = sprite.CollisionMasks.Count;
+        while (collision_mask_count <= frame)
         {
-            IncrementProgress();
-
-            string FileNameWithExtension = Path.GetFileName(file);
-            if (!FileNameWithExtension.EndsWith(".png"))
-                continue; // Restarts loop if file is not a valid mask asset.
-            string stripped = Path.GetFileNameWithoutExtension(file);
-            int lastUnderscore = stripped.LastIndexOf('_');
-            string spriteName = stripped.Substring(0, lastUnderscore);
-            int frame = Int32.Parse(stripped.Substring(lastUnderscore + 1));
-            UndertaleSprite sprite = Data.Sprites.ByName(spriteName);
-            int collision_mask_count = sprite.CollisionMasks.Count;
-            while (collision_mask_count <= frame)
-            {
-                sprite.CollisionMasks.Add(sprite.NewMaskEntry());
-                collision_mask_count += 1;
-            }
-            try
-            {
-                sprite.CollisionMasks[frame].Data = TextureWorker.ReadMaskData(file);
-            }
-            catch
-            {
-                throw new ScriptException(FileNameWithExtension + " has an error that prevents its import and so the operation has been aborted! Please correct this before trying again!");
-            }
+            sprite.CollisionMasks.Add(sprite.NewMaskEntry());
+            collision_mask_count += 1;
         }
-    });
+        try
+        {
+            sprite.CollisionMasks[frame].Data = TextureWorker.ReadMaskData(file);
+        }
+        catch
+        {
+            throw new ScriptException(FileNameWithExtension + " has an error that prevents its import and so the operation has been aborted! Please correct this before trying again!");
+        }
+    }
 
-    await StopProgressBarUpdater();
-    HideProgressBar();
     ScriptMessage("Import Masks Complete!");
 }
 
@@ -979,6 +964,8 @@ public void ImportObject(string filePath) {
         AllowTrailingCommas = true,
         CommentHandling = JsonCommentHandling.Skip
     };
+
+    UndertaleGameObject newGameObject = new UndertaleGameObject();
 
     Utf8JsonReader reader = new Utf8JsonReader(jsonUtf8Bytes, options);
 
@@ -1242,6 +1229,8 @@ public void ImportRoom(string filePath) {
 
     stream.Read(jsonUtf8Bytes, 0, jsonUtf8Bytes.Length);
     stream.Close();
+
+    UndertaleRoom newRoom = new UndertaleRoom();
 
     JsonReaderOptions options = new JsonReaderOptions
     {
@@ -1965,13 +1954,15 @@ public void ImportRoom(string filePath) {
 // Also for whatever reason putting this logic in an async thread crashes UTMT
 // Taken from ImportSoundsBulk By Jockeholm & Nik the Neko & Grossley
 public void ImportSound(string filePath) {
-    string fname = Path.GetFileName(file);
+    int embAudioID = -1;
+    int audioID = -1;
+    string fname = Path.GetFileName(filePath);
     string temp = fname.ToLower();
     if (!temp.EndsWith(".ogg") && !temp.EndsWith(".wav"))
     {
-        continue;
+        return;
     }
-    string sound_name = Path.GetFileNameWithoutExtension(file);
+    string sound_name = Path.GetFileNameWithoutExtension(filePath);
     bool isOGG = Path.GetExtension(fname) == ".ogg";
     bool embedSound = !isOGG;
 
@@ -1985,7 +1976,7 @@ public void ImportSound(string filePath) {
     UndertaleEmbeddedAudio soundData = null;
 
     if (embedSound) {
-        soundData = new UndertaleEmbeddedAudio() { Data = File.ReadAllBytes(fileDialog.FileName) };
+        soundData = new UndertaleEmbeddedAudio() { Data = File.ReadAllBytes(filePath) };
         Data.EmbeddedAudio.Add(soundData);
         if (soundExists)
             Data.EmbeddedAudio.Remove(existing_snd.AudioFile);
