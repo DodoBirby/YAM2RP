@@ -60,12 +60,15 @@ if (Directory.Exists(scriptPath))
 if (Directory.Exists(objectPath)) {
     foreach (string file in Directory.GetFiles(objectPath)) {
         ImportObject(file);
+        
     }
+    ScriptMessage("Imported Objects!");
 }
 if (Directory.Exists(roomPath)) {
     foreach (string file in Directory.GetFiles(roomPath)) {
         ImportRoom(file);
     }
+    ScriptMessage("Imported Rooms!");
 }
 
 
@@ -1244,7 +1247,6 @@ public void ImportRoom(string filePath) {
 
     ReadName(ref reader);
     ReadMainValues(ref reader);
-
     ClearRoomLists();
 
     ReadBackgrounds(ref reader);
@@ -1252,7 +1254,6 @@ public void ImportRoom(string filePath) {
     ReadGameObjects(ref reader);
     ReadTiles(ref reader);
     ReadLayers(ref reader);
-
     // Adds room to data file, if it doesn't exist.
     if (Data.Rooms.ByName(newRoom.Name.Content) == null)
         Data.Rooms.Add(newRoom);
@@ -1414,7 +1415,7 @@ public void ImportRoom(string filePath) {
                 }
                 Data.GeneralInfo.LastObj = Math.Max(InstanceID, Data.GeneralInfo.LastObj);
                 usedInstanceIDs.Add(InstanceID);
-                newObj.InstanceID = (uint) ReadNum(ref reader);
+                newObj.InstanceID = InstanceID;
 
                 string ccIdName = ReadString(ref reader);
 
@@ -1472,7 +1473,7 @@ public void ImportRoom(string filePath) {
                 }
                 usedTileIDs.Add(InstanceID);
                 Data.GeneralInfo.LastTile = Math.Max(InstanceID, Data.GeneralInfo.LastTile);
-                newTile.InstanceID = (uint) ReadNum(ref reader);
+                newTile.InstanceID = InstanceID;
                 newTile.ScaleX = ReadFloat(ref reader);
                 newTile.ScaleY = ReadFloat(ref reader);
                 newTile.Color = (uint) ReadNum(ref reader);
