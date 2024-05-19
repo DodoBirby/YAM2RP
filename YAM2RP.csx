@@ -15,6 +15,7 @@ string sourceFolder = PromptChooseDirectory();
 if (sourceFolder == null)
     throw new ScriptException("The import folder was not set.");
 
+string soundPath = Path.Combine(sourceFolder, "Sounds");
 string graphicsPath = Path.Combine(sourceFolder, "Graphics");
 string maskPath = Path.Combine(sourceFolder, "Masks");
 string objectPath = Path.Combine(sourceFolder, "Objects");
@@ -29,6 +30,11 @@ if (Directory.Exists(graphicsPath))
 }
 if (Directory.Exists(maskPath)) {
     ImportMasks();
+}
+if (Directory.Exists(soundPath)) {
+    foreach (string file in Directory.GetFiles(soundPath)) {
+        ImportSound(file);
+    }
 }
 
 // Objects and rooms can be referenced by code so they need to be imported before code is compiled
@@ -359,6 +365,8 @@ public class Packer
     }
 }
 
+
+// Taken from ImportGraphics by Samuel Roy
 public void ImportGraphics() {
     bool importAsSprite = false;
 
@@ -686,6 +694,10 @@ Pressing ""No"" will cause the program to ignore these images.");
     }
 }
 
+// Taken from ImportGML 
+// Credits:
+// Script by Jockeholm based off of a script by Kneesnap.
+// Major help and edited by Samuel Roy
 public void ImportScripts() {
     string[] dirFiles = Directory.GetFiles(scriptPath);
     if (dirFiles.Length == 0)
@@ -712,6 +724,7 @@ public void ImportScripts() {
     ScriptMessage("Script import complete!");
 }
 
+// Taken from ImportMasks by Grossley
 public void ImportMasks() {
     string importFolder = maskPath;
     if (importFolder == null)
@@ -817,6 +830,7 @@ public void ImportMasks() {
     ScriptMessage("Import Masks Complete!");
 }
 
+// Taken from ImportGameObject by SolventMercury
 public void ReadObjectName(string filePath) {
     FileStream stream = File.OpenRead(filePath);
     byte[] jsonUtf8Bytes = new byte[stream.Length];
@@ -883,6 +897,7 @@ public void ReadObjectName(string filePath) {
     }
 }
 
+// Taken from ImportRoom_v3 by SolventMercury and AwfulNasty
 public void ReadRoomName(string filePath) {
     FileStream stream = File.OpenRead(filePath);
     byte[] jsonUtf8Bytes = new byte[stream.Length];
@@ -1220,6 +1235,7 @@ public void ImportObject(string filePath) {
     }
 }
 
+// Taken from ImportRoom_v3 by SolventMercury and AwfulNasty
 public void ImportRoom(string filePath) {
     FileStream stream = File.OpenRead(filePath);
     byte[] jsonUtf8Bytes = new byte[stream.Length];
@@ -1941,5 +1957,80 @@ public void ImportRoom(string filePath) {
         }
 
         throw new ScriptException("ERROR: Did not find value of expected type. Expected String.");
+    }
+}
+
+
+// Does not handle audio groups because AM2R doesn't use them and I can't be bothered
+// Also for whatever reason putting this logic in an async thread crashes UTMT
+// Taken from ImportSoundsBulk By Jockeholm & Nik the Neko & Grossley
+public void ImportSound(string filePath) {
+    string fname = Path.GetFileName(file);
+    string temp = fname.ToLower();
+    if (!temp.EndsWith(".ogg") && !temp.EndsWith(".wav"))
+    {
+        continue;
+    }
+    string sound_name = Path.GetFileNameWithoutExtension(file);
+    bool isOGG = Path.GetExtension(fname) == ".ogg";
+    bool embedSound = !isOGG;
+
+    bool soundExists = false;
+    
+    UndertaleSound existing_snd = null;
+    
+    existing_snd = Data.Sounds.FirstOrDefault(x => x.Name.Content == sound_name);
+    soundExists = existing_snd != null;
+
+    UndertaleEmbeddedAudio soundData = null;
+
+    if (embedSound) {
+        soundData = new UndertaleEmbeddedAudio() { Data = File.ReadAllBytes(fileDialog.FileName) };
+        Data.EmbeddedAudio.Add(soundData);
+        if (soundExists)
+            Data.EmbeddedAudio.Remove(existing_snd.AudioFile);
+        embAudioID = Data.EmbeddedAudio.Count - 1;
+    }
+
+    UndertaleSound.AudioEntryFlags flags = UndertaleSound.AudioEntryFlags.Regular;
+    
+    if (!isOGG)                                // WAV, always embed.
+        flags = UndertaleSound.AudioEntryFlags.IsEmbedded   | UndertaleSound.AudioEntryFlags.Regular;
+    else                // OGG, external.
+    {
+        flags = UndertaleSound.AudioEntryFlags.Regular;
+        audioID = -1;
+    }
+
+    UndertaleEmbeddedAudio RaudioFile = null;
+    if (!embedSound)             
+        RaudioFile = null;
+    if (embedSound) 
+        RaudioFile = Data.EmbeddedAudio[embAudioID];
+    string soundfname = sound_name;
+
+    if (!soundExists)
+    {
+        var snd_to_add = new UndertaleSound()
+        {
+            Name        = Data.Strings.MakeString(soundfname),
+            Flags       = flags,
+            Type        = (isOGG      ? Data.Strings.MakeString(".ogg") : Data.Strings.MakeString(".wav")               ),
+            File        = Data.Strings.MakeString(fname),
+            Effects     = 0,
+            Volume      = 1.0F,
+            Pitch       = 1.0F,
+            AudioID     = audioID,
+            AudioFile   = RaudioFile,
+            AudioGroup  = null,
+            GroupID     = Data.GetBuiltinSoundGroupID()
+        };
+        
+        Data.Sounds.Add(snd_to_add);
+    }
+    else
+    {
+        existing_snd.AudioFile = RaudioFile;
+        existing_snd.AudioID   = audioID;
     }
 }
