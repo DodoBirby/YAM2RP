@@ -390,7 +390,6 @@ public class Packer
 
 // Taken from ImportGraphics by Samuel Roy
 public void ImportGraphics() {
-    bool importAsSprite = false;
 
     // "(.+?)" - match everything; "?" = match as few characters as possible.
     // "(?:_(-*\d+))*" - an underscore + (optional minus + several digits);
@@ -451,12 +450,9 @@ public void ImportGraphics() {
 
                 SpriteType spriteType = GetSpriteType(n.Texture.Source);
 
-                if (importAsSprite)
+                if ((spriteType == SpriteType.Unknown) || (spriteType == SpriteType.Font))
                 {
-                    if ((spriteType == SpriteType.Unknown) || (spriteType == SpriteType.Font))
-                    {
-                        spriteType = SpriteType.Sprite;
-                    }
+                    spriteType = SpriteType.Sprite;
                 }
 
                 setTextureTargetBounds(texturePageItem, stripped, n);
