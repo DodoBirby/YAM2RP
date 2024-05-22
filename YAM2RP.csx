@@ -725,7 +725,7 @@ public void ImportMasks() {
     if (importFolder == null)
         throw new ScriptException("The import folder was not set.");
 
-    string[] dirFiles = Directory.GetFiles(importFolder, "*.png", SearchOptions.AllDirectories);
+    string[] dirFiles = Directory.GetFiles(importFolder, "*.png", SearchOption.AllDirectories);
 
     //Stop the script if there's missing sprite entries or w/e.
     foreach (string file in dirFiles)
