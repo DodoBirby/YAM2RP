@@ -13,9 +13,11 @@ using UndertaleModLib.Util;
 using System.Text.Json;
 
 EnsureDataLoaded();
+
+ScriptMessage("Select source folder");
 string sourceFolder = PromptChooseDirectory();
 if (sourceFolder == null)
-    throw new ScriptException("The import folder was not set.");
+    throw new ScriptException("The source folder was not set.");
 
 string soundPath = Path.Combine(sourceFolder, "Sounds");
 string graphicsPath = Path.Combine(sourceFolder, "Graphics");
@@ -24,19 +26,30 @@ string objectPath = Path.Combine(sourceFolder, "Objects");
 string roomPath = Path.Combine(sourceFolder, "Rooms");
 string scriptPath = Path.Combine(sourceFolder, "Code");
 
+string nameReplacePath = Path.Combine(sourceFolder, "Replace.txt");
+
 HashSet<uint> usedInstanceIDs = new HashSet<uint>();
 HashSet<uint> usedTileIDs = new HashSet<uint>();
+
+if (File.Exists(nameReplacePath)) {
+    ReplaceNames(File.ReadAllLines(nameReplacePath));
+    ScriptMessage("Replaced resource names");
+}
+
 if (Directory.Exists(graphicsPath))
 {
     ImportGraphics();
+    ScriptMessage("Imported graphics");
 }
 if (Directory.Exists(maskPath)) {
     ImportMasks();
+    ScriptMessage("Imported collision masks");
 }
 if (Directory.Exists(soundPath)) {
     foreach (string file in Directory.GetFiles(soundPath)) {
         ImportSound(file);
     }
+    ScriptMessage("Imported sounds");
 }
 
 // Objects and rooms can be referenced by code so they need to be imported before code is compiled
@@ -46,15 +59,18 @@ if (Directory.Exists(objectPath)) {
     foreach (string file in Directory.GetFiles(objectPath)) {
         ReadObjectName(file);
     }
+    ScriptMessage("Imported object names");
 }
 if (Directory.Exists(roomPath)) {
     foreach (string file in Directory.GetFiles(roomPath)) {
         ReadRoomName(file);
     }
+    ScriptMessage("Imported room names");
 }
 if (Directory.Exists(scriptPath))
 {
     ImportScripts();
+    ScriptMessage("Imported code");
 }
 // Fill in object and room data now that code is compiled with proper references
 if (Directory.Exists(objectPath)) {
@@ -62,14 +78,15 @@ if (Directory.Exists(objectPath)) {
         ImportObject(file);
         
     }
-    ScriptMessage("Imported Objects!");
+    ScriptMessage("Imported objects");
 }
 if (Directory.Exists(roomPath)) {
     foreach (string file in Directory.GetFiles(roomPath)) {
         ImportRoom(file);
     }
-    ScriptMessage("Imported Rooms!");
+    ScriptMessage("Imported rooms");
 }
+ScriptMessage("Patching Complete!");
 
 
 public class TextureInfo
@@ -554,9 +571,6 @@ public void ImportGraphics() {
         atlasCount++;
     }
 
-    HideProgressBar();
-    ScriptMessage("Import Complete!");
-
     void setTextureTargetBounds(UndertaleTexturePageItem tex, string textureName, Node n)
     {
         tex.TargetX = 0;
@@ -611,23 +625,10 @@ Do you want to continue?");
 
             SpriteType spriteType = GetSpriteType(file);
 
+            // Dodo: Previously there was a question to ask if the user wanted to import unknowns as sprites, I've just defaulted to yes
             if ((spriteType != SpriteType.Sprite) && (spriteType != SpriteType.Background))
             {
-                if (!hadMessage)
-                {
-                    hadMessage = true;
-                    importAsSprite = ScriptQuestion(FileNameWithExtension + @" is in an incorrectly-named folder (valid names being ""Sprites"" and ""Backgrounds""). Would you like to import these images as sprites?
-Pressing ""No"" will cause the program to ignore these images.");
-                }
-
-                if (!importAsSprite)
-                {
-                    continue;
-                }
-                else
-                {
-                    spriteType = SpriteType.Sprite;
-                }
+                spriteType = SpriteType.Sprite;
             }
 
             // Check for duplicate filenames
@@ -716,8 +717,6 @@ public void ImportScripts() {
 
         ImportGMLFile(file, true, false, true);
     }
-
-    ScriptMessage("Script import complete!");
 }
 
 // Taken from ImportMasks by Grossley
@@ -814,8 +813,6 @@ public void ImportMasks() {
             throw new ScriptException(FileNameWithExtension + " has an error that prevents its import and so the operation has been aborted! Please correct this before trying again!");
         }
     }
-
-    ScriptMessage("Import Masks Complete!");
 }
 
 // Taken from ImportGameObject by SolventMercury
@@ -2024,5 +2021,37 @@ public void ImportSound(string filePath) {
     {
         existing_snd.AudioFile = RaudioFile;
         existing_snd.AudioID   = audioID;
+    }
+}
+
+public void ReplaceNames(string[] lines) {
+    int lineCount = 0;
+    foreach (string line in lines)
+    {
+        lineCount++;
+        string trimmedLine = line.Trim();
+        if (trimmedLine == "")
+        {
+            continue;
+        }
+        string[] splitLine = trimmedLine.Split("->", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (splitLine.Length != 2)
+        {
+            throw new ScriptException($"Syntax error on Replace.txt line {lineCount}: Failed to split line on '->'. Correct syntax is [OriginalName] -> [NewName]");
+        }
+        string originalName = splitLine[0];
+        string newName = splitLine[1];
+        UndertaleNamedResource res = Data.ByName(originalName);
+        if (res == null)
+        {
+            throw new ScriptException($"Error on Replace.txt line {lineCount}: Couldn't find asset with name {originalName} to replace. Are you sure you are using the right base file?");
+        }
+        UndertaleNamedResource newRes = Data.ByName(newName);
+        if (newRes != null)
+        {
+            throw new ScriptException($"Error on Replace.txt line {lineCount}: Asset with name {newName} already exists but attempted to rename {originalName} to {newName}");
+        }
+        res.Name = new UndertaleString(newName);
+        Data.Strings.Add(res.Name);
     }
 }
