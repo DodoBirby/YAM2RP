@@ -46,7 +46,7 @@ if (Directory.Exists(maskPath)) {
     ScriptMessage("Imported collision masks");
 }
 if (Directory.Exists(soundPath)) {
-    foreach (string file in Directory.GetFiles(soundPath)) {
+    foreach (string file in Directory.GetFiles(soundPath, "*", SearchOption.AllDirectories)) {
         ImportSound(file);
     }
     ScriptMessage("Imported sounds");
@@ -56,13 +56,13 @@ if (Directory.Exists(soundPath)) {
 // But rooms and objects can reference code by name in their data so we just add entries without data here
 // This also allows object parent references between objects to work since all new objects are in Data before parent references are filled in
 if (Directory.Exists(objectPath)) {
-    foreach (string file in Directory.GetFiles(objectPath)) {
+    foreach (string file in Directory.GetFiles(objectPath, "*.json", SearchOption.AllDirectories)) {
         ReadObjectName(file);
     }
     ScriptMessage("Imported object names");
 }
 if (Directory.Exists(roomPath)) {
-    foreach (string file in Directory.GetFiles(roomPath)) {
+    foreach (string file in Directory.GetFiles(roomPath, "*.json", SearchOption.AllDirectories)) {
         ReadRoomName(file);
     }
     ScriptMessage("Imported room names");
@@ -74,14 +74,14 @@ if (Directory.Exists(scriptPath))
 }
 // Fill in object and room data now that code is compiled with proper references
 if (Directory.Exists(objectPath)) {
-    foreach (string file in Directory.GetFiles(objectPath)) {
+    foreach (string file in Directory.GetFiles(objectPath, "*.json", SearchOption.AllDirectories)) {
         ImportObject(file);
         
     }
     ScriptMessage("Imported objects");
 }
 if (Directory.Exists(roomPath)) {
-    foreach (string file in Directory.GetFiles(roomPath)) {
+    foreach (string file in Directory.GetFiles(roomPath, "*.json", SearchOption.AllDirectories)) {
         ImportRoom(file);
     }
     ScriptMessage("Imported rooms");
@@ -705,7 +705,7 @@ Do you want to continue?");
 // Script by Jockeholm based off of a script by Kneesnap.
 // Major help and edited by Samuel Roy
 public void ImportScripts() {
-    string[] dirFiles = Directory.GetFiles(scriptPath);
+    string[] dirFiles = Directory.GetFiles(scriptPath, "*.gml", SearchOption.AllDirectories);
     if (dirFiles.Length == 0)
         throw new ScriptException("The selected folder is empty.");
     else if (!dirFiles.Any(x => x.EndsWith(".gml")))
@@ -725,7 +725,7 @@ public void ImportMasks() {
     if (importFolder == null)
         throw new ScriptException("The import folder was not set.");
 
-    string[] dirFiles = Directory.GetFiles(importFolder);
+    string[] dirFiles = Directory.GetFiles(importFolder, "*.png", SearchOptions.AllDirectories);
 
     //Stop the script if there's missing sprite entries or w/e.
     foreach (string file in dirFiles)
