@@ -12,6 +12,12 @@ Graphics (Contains backgrounds and sprites, folder structure can be whatever you
 Masks (Contains any custom sprite collision masks, should be named the same as the sprite it is a mask of NOTE: You must always append '_#' where # is the frame number of the sprite to mask names, if your sprite only has one frame then append '_0')  
 Sounds (Contains .wav and .ogg sound files)  
 
+### Options Files ###
+There are currently 2 optional text files you can include in your source folder to get some extra functionality.  
+Replace.txt allows you to designate assets in the base file which have been replaced by assets in the result file, the base assets will be renamed 
+before any importing occurs.  
+SpriteOptions.txt allows you to customise the margins, flags, sepMasks, and Origin positions of sprites.
+
 ### How to Use ###
 In UTMT you can run scripts using Scripts > Run other script... then to run YAM2RP select YAM2RP.csx from the file select.
 
