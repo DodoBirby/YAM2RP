@@ -5,7 +5,7 @@ This [Undertale Mod Tool](https://github.com/UnderminersTeam/UndertaleModTool) s
 Most import scripts are not written by me, credits are in comments above the corresponding function.
 ### Folder Structure ###
 All Folders are optional  
-Code (Contains all the gml files)  
+Code (Contains all the gml files, they should follow GMS naming conventions like gml_Object_testObject_Step_0.gml)  
 Objects (Contains json files exported by ExportAllGameObjects)  
 Rooms (Contains json files exported by ExportRoomsWithCC)  
 Graphics (Contains backgrounds and sprites, folder structure can be whatever you want but the backgrounds/tilesets should be placed in a folder named backgrounds somewhere in the tree)  
@@ -14,3 +14,5 @@ Sounds (Contains .wav and .ogg sound files)
 
 ### How to Use ###
 In UTMT you can run scripts using Scripts > Run other script... then to run YAM2RP select YAM2RP.csx from the file select.
+
+
