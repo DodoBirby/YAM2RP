@@ -29,6 +29,7 @@ string roomPath = Path.Combine(sourceFolder, "Rooms");
 string scriptPath = Path.Combine(sourceFolder, "Code");
 
 string nameReplacePath = Path.Combine(sourceFolder, "Replace.txt");
+string spriteOptionsPath = Path.Combine(sourceFolder, "SpriteOptions.txt");
 
 HashSet<uint> usedInstanceIDs = new HashSet<uint>();
 HashSet<uint> usedTileIDs = new HashSet<uint>();
@@ -43,10 +44,17 @@ if (Directory.Exists(graphicsPath))
     ImportGraphics();
     ScriptMessage("Imported graphics");
 }
+
 if (Directory.Exists(maskPath)) {
     ImportMasks();
     ScriptMessage("Imported collision masks");
 }
+
+if (File.Exists(spriteOptionsPath)) {
+    ImportSpriteOptions(File.ReadAllLines(spriteOptionsPath));
+    ScriptMessage("Changed Sprite Options");
+}
+
 if (Directory.Exists(soundPath)) {
     foreach (string file in Directory.GetFiles(soundPath, "*", SearchOption.AllDirectories)) {
         ImportSound(file);
@@ -2036,28 +2044,89 @@ public void ReplaceNames(string[] lines) {
     {
         lineCount++;
         string trimmedLine = line.Trim();
-        if (trimmedLine == "")
+        if (trimmedLine == "" || trimmedLine[0] == '#')
         {
             continue;
         }
         string[] splitLine = trimmedLine.Split("->", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
         if (splitLine.Length != 2)
         {
-            throw new ScriptException($"Syntax error on Replace.txt line {lineCount}: Failed to split line on '->'. Correct syntax is [OriginalName] -> [NewName]");
+            throw new ScriptException($"Syntax error in Replace.txt line {lineCount}: Failed to split line on '->'. Correct syntax is [OriginalName] -> [NewName]");
         }
         string originalName = splitLine[0];
         string newName = splitLine[1];
         UndertaleNamedResource res = Data.ByName(originalName);
         if (res == null)
         {
-            throw new ScriptException($"Error on Replace.txt line {lineCount}: Couldn't find asset with name {originalName} to replace. Are you sure you are using the right base file?");
+            throw new ScriptException($"Error in Replace.txt line {lineCount}: Couldn't find asset with name {originalName} to replace. Are you sure you are using the right base file?");
         }
         UndertaleNamedResource newRes = Data.ByName(newName);
         if (newRes != null)
         {
-            throw new ScriptException($"Error on Replace.txt line {lineCount}: Asset with name {newName} already exists but attempted to rename {originalName} to {newName}");
+            throw new ScriptException($"Error in Replace.txt line {lineCount}: Asset with name {newName} already exists but attempted to rename {originalName} to {newName}");
         }
         res.Name = new UndertaleString(newName);
         Data.Strings.Add(res.Name);
+    }
+}
+
+public void ImportSpriteOptions(string[] lines) {
+    int lineCount = 0;
+    foreach (string line in lines)
+    {
+        lineCount++;
+        string trimmedLine = line.Trim();
+        if (trimmedLine == "" || trimmedLine[0] == '#')
+        {
+            continue;
+        }
+        string[] splitLine = trimmedLine.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (splitLine.Length != 8)
+        {
+            throw new ScriptException($"Syntax error in SpriteOptions.txt line {lineCount}: " + 
+                "Incorrect amount of arguments. Correct syntax is [SpriteName] [MarginLeft] [MarginRight] [MarginBottom] [MarginTop] [SepMasks] [OriginX] [OriginY]");
+        }
+        string spriteName = splitLine[0];
+        UndertaleSprite sprite = Data.Sprites.ByName(spriteName);
+        if (sprite == null)
+        {
+            throw new ScriptException($"Error in SpriteOptions.txt line {lineCount} Could not find sprite with name {spriteName}");
+        }
+        if (!int.TryParse(splitLine[1], out int marginLeft))
+        {
+            throw new ScriptException($"Syntax error in SpriteOptions.txt line {lineCount}: Argument [MarginLeft] could not be parsed as an integer");
+        }
+        if (!int.TryParse(splitLine[2], out int marginRight))
+        {
+            throw new ScriptException($"Syntax error in SpriteOptions.txt line {lineCount}: Argument [MarginRight] could not be parsed as an integer");
+        }
+        if (!int.TryParse(splitLine[3], out int marginBottom))
+        {
+            throw new ScriptException($"Syntax error in SpriteOptions.txt line {lineCount}: Argument [MarginBottom] could not be parsed as an integer");
+        }
+        if (!int.TryParse(splitLine[4], out int marginTop))
+        {
+            throw new ScriptException($"Syntax error in SpriteOptions.txt line {lineCount}: Argument [MarginTop] could not be parsed as an integer");
+        }
+        if (!Enum.TryParse(typeof(UndertaleSprite.SepMaskType), splitLine[5], true, out object result))
+        {
+            throw new ScriptException($"Syntax error in SpriteOptions.txt line {lineCount}: Argument [SepMasks] could not be parsed as a sepMaskType");
+        }
+        UndertaleSprite.SepMaskType sepMaskType = (UndertaleSprite.SepMaskType) result;
+        if (!int.TryParse(splitLine[6], out int originX))
+        {
+            throw new ScriptException($"Syntax error in SpriteOptions.txt line {lineCount}: Argument [OriginX] could not be parsed as an integer");
+        }
+        if (!int.TryParse(splitLine[7], out int originY))
+        {
+            throw new ScriptException($"Syntax error in SpriteOptions.txt line {lineCount}: Argument [OriginY] could not be parsed as an integer");
+        }
+        sprite.MarginLeft = marginLeft;
+        sprite.MarginRight = marginRight;
+        sprite.MarginTop = marginTop;
+        sprite.MarginBottom = marginBottom;
+        sprite.SepMasks = sepMaskType;
+        sprite.OriginX = originX;
+        sprite.OriginY = originY;
     }
 }
