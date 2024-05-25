@@ -1,0 +1,3 @@
+# This file designates any sprites that should have custom margins, sepMasks, or origin positions, this step takes place after sprites are imported and renames have taken place
+# A '#' at the start of a line indicates a comment
+# Correct syntax is '[SpriteName] [MarginLeft] [MarginRight] [MarginBottom] [MarginTop] [SepMasks] [OriginX] [OriginY]'
