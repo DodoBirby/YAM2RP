@@ -1,10 +1,13 @@
 // Written by SolventMercury
+// With some minor YAM2RP modifications
 
 using System;
 using System.IO;
 using System.Text;
 using System.Text.Json;
 using UndertaleModLib.Models;
+
+const int CollisionEventIndex = 4;
 
 EnsureDataLoaded();
 
@@ -90,11 +93,13 @@ void WriteGameObjectToJson(UndertaleGameObject gameObject)
     writer.WriteEndArray();
 
     writer.WriteStartArray("events");
+    int eventIndex = -1;
     if (gameObject.Events != null)
     {
         foreach (IList<UndertaleGameObject.Event> eventList in gameObject.Events)
         {
             writer.WriteStartArray();
+            eventIndex++;
             if (eventList != null)
             {
                 foreach (UndertaleGameObject.Event objectEvent in eventList)
@@ -102,7 +107,12 @@ void WriteGameObjectToJson(UndertaleGameObject gameObject)
                     writer.WriteStartObject();
                     if (objectEvent != null)
                     {
-                        writer.WriteNumber("event_subtype", objectEvent.EventSubtype);
+                        // YAM2RP modification, store collision event subtypes as names instead of magic numbers
+                        if (eventIndex == CollisionEventIndex) {
+                            writer.WriteString("event_subtype", Data.GameObjects[(int)objectEvent.EventSubtype].Name.Content);
+                        } else {
+                            writer.WriteNumber("event_subtype", objectEvent.EventSubtype);
+                        }
                         writer.WriteStartArray("actions");
                         if (objectEvent.Actions != null)
                         {

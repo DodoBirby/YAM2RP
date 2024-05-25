@@ -12,6 +12,8 @@ using System.Text.RegularExpressions;
 using UndertaleModLib.Util;
 using System.Text.Json;
 
+const int CollisionEventIndex = 4;
+
 EnsureDataLoaded();
 
 ScriptMessage("Select source folder");
@@ -1036,7 +1038,7 @@ public void ImportObject(string filePath) {
             {
                 eventListIndex++;
                 newGameObject.Events[eventListIndex].Clear();
-                foreach (UndertaleGameObject.Event eventToAdd in ReadEvents(ref reader)) newGameObject.Events[eventListIndex].Add(eventToAdd);
+                foreach (UndertaleGameObject.Event eventToAdd in ReadEvents(ref reader, eventListIndex)) newGameObject.Events[eventListIndex].Add(eventToAdd);
                 continue;
             }
 
@@ -1047,7 +1049,7 @@ public void ImportObject(string filePath) {
         }
     }
 
-    List<UndertaleGameObject.Event> ReadEvents(ref Utf8JsonReader reader)
+    List<UndertaleGameObject.Event> ReadEvents(ref Utf8JsonReader reader, int index)
     {
         List<UndertaleGameObject.Event> eventsToReturn = new List<UndertaleGameObject.Event>();
         while (reader.Read())
@@ -1057,7 +1059,12 @@ public void ImportObject(string filePath) {
             if (reader.TokenType != JsonTokenType.StartObject) continue;
 
             UndertaleGameObject.Event newEvent = new UndertaleGameObject.Event();
-            newEvent.EventSubtype = (uint) ReadNum(ref reader);
+            if (index == CollisionEventIndex) {
+                string name = ReadString(ref reader);
+                newEvent.EventSubtype = (uint) Data.GameObjects.IndexOf(Data.GameObjects.ByName(name));
+            } else {
+                newEvent.EventSubtype = (uint) ReadNum(ref reader);
+            }
             newEvent.Actions.Clear();
             foreach (UndertaleGameObject.EventAction action in ReadActions(ref reader)) newEvent.Actions.Add(action);
             eventsToReturn.Add(newEvent);
