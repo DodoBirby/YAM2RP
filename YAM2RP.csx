@@ -2070,6 +2070,7 @@ public void ReplaceNames(string[] lines) {
     }
 }
 
+// TODO: Use regex or something here to allow for keyword args, users should probably not have to type all 11 args just to change one thing
 public void ImportSpriteOptions(string[] lines) {
     int lineCount = 0;
     foreach (string line in lines)
@@ -2081,10 +2082,10 @@ public void ImportSpriteOptions(string[] lines) {
             continue;
         }
         string[] splitLine = trimmedLine.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (splitLine.Length != 8)
+        if (splitLine.Length != 11)
         {
-            throw new ScriptException($"Syntax error in SpriteOptions.txt line {lineCount}: " + 
-                "Incorrect amount of arguments. Correct syntax is [SpriteName] [MarginLeft] [MarginRight] [MarginBottom] [MarginTop] [SepMasks] [OriginX] [OriginY]");
+            throw new ScriptException($"Syntax error in SpriteOptions.txt line {lineCount}: " +
+                "Incorrect amount of arguments. Correct syntax is [SpriteName] [MarginLeft] [MarginRight] [MarginBottom] [MarginTop] [Transparent] [Smooth] [Preload] [SepMasks] [OriginX] [OriginY]");
         }
         string spriteName = splitLine[0];
         UndertaleSprite sprite = Data.Sprites.ByName(spriteName);
@@ -2108,16 +2109,28 @@ public void ImportSpriteOptions(string[] lines) {
         {
             throw new ScriptException($"Syntax error in SpriteOptions.txt line {lineCount}: Argument [MarginTop] could not be parsed as an integer");
         }
-        if (!Enum.TryParse(typeof(UndertaleSprite.SepMaskType), splitLine[5], true, out object result))
+        if (!bool.TryParse(splitLine[5], out bool transparent))
+        {
+            throw new ScriptException($"Syntax error in SpriteOptions.txt line {lineCount}: Argument [Transparent] could not be parsed as an integer");
+        }
+        if (!bool.TryParse(splitLine[6], out bool smooth))
+        {
+            throw new ScriptException($"Syntax error in SpriteOptions.txt line {lineCount}: Argument [Smooth] could not be parsed as an integer");
+        }
+        if (!bool.TryParse(splitLine[7], out bool preload))
+        {
+            throw new ScriptException($"Syntax error in SpriteOptions.txt line {lineCount}: Argument [Preload] could not be parsed as an integer");
+        }
+        if (!Enum.TryParse(typeof(UndertaleSprite.SepMaskType), splitLine[8], true, out object result))
         {
             throw new ScriptException($"Syntax error in SpriteOptions.txt line {lineCount}: Argument [SepMasks] could not be parsed as a sepMaskType");
         }
         UndertaleSprite.SepMaskType sepMaskType = (UndertaleSprite.SepMaskType) result;
-        if (!int.TryParse(splitLine[6], out int originX))
+        if (!int.TryParse(splitLine[9], out int originX))
         {
             throw new ScriptException($"Syntax error in SpriteOptions.txt line {lineCount}: Argument [OriginX] could not be parsed as an integer");
         }
-        if (!int.TryParse(splitLine[7], out int originY))
+        if (!int.TryParse(splitLine[10], out int originY))
         {
             throw new ScriptException($"Syntax error in SpriteOptions.txt line {lineCount}: Argument [OriginY] could not be parsed as an integer");
         }
@@ -2125,6 +2138,9 @@ public void ImportSpriteOptions(string[] lines) {
         sprite.MarginRight = marginRight;
         sprite.MarginTop = marginTop;
         sprite.MarginBottom = marginBottom;
+        sprite.Transparent = transparent;
+        sprite.Smooth = smooth;
+        sprite.Preload = preload;
         sprite.SepMasks = sepMaskType;
         sprite.OriginX = originX;
         sprite.OriginY = originY;
