@@ -719,9 +719,10 @@ public void ImportScripts() {
 
     foreach (string file in dirFiles)
     {
+        string fileName = Path.GetFileName(file);
         IncrementProgress();
-        if (file.StartsWith("gml_Script")) {
-            ImportGMLFile(file, throwOnError: true);
+        if (fileName.StartsWith("gml_Script")) {
+            ImportGMLFile(file, doParse: true, throwOnError: true);
         } else {
             ImportGMLFile(file, doParse: false, throwOnError: true);
         }
