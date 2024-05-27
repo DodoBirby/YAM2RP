@@ -5,7 +5,7 @@ This [Undertale Mod Tool](https://github.com/UnderminersTeam/UndertaleModTool) s
 Most import scripts are not written by me, credits are in comments above the corresponding function.
 ### Folder Structure ###
 All Folders are optional  
-Code (Contains all the gml files, they should follow GMS naming conventions like gml_Object_testObject_Step_0.gml)  
+Code (Contains all the gml files, they should follow GMS naming conventions like gml_Object_testObject_Step_0.gml or gml_Script_testscript.gml otherwise they might not import properly)  
 Objects (Contains json files exported by ExportAllGameObjects)  
 Rooms (Contains json files exported by ExportRoomsWithCC)  
 Graphics (Contains backgrounds and sprites, folder structure can be whatever you want but the backgrounds/tilesets should be placed in a folder named backgrounds somewhere in the tree)  
