@@ -12,6 +12,9 @@ Graphics (Contains backgrounds and sprites, folder structure can be whatever you
 Masks (Contains any custom sprite collision masks, should be named the same as the sprite it is a mask of NOTE: You must always append '_#' where # is the frame number of the sprite to mask names, if your sprite only has one frame then append '_0')  
 Sounds (Contains .wav and .ogg sound files)  
 
+### Code Exports ###
+Code exported from UTMT that references sprites, rooms, or objects will likely use the index number of the asset to reference it since it is decompiled code (e.g exported code might look like `var playersprite = 10` where 10 is the index number of sPlayerSprite). Importing with YAM2RP doesn't guarantee that these indexes will be constant. To deal with this, all of these "magic number" references should be changed to the name of the asset in question (e.g the above code `var playersprite = 10` should be manually changed to `var playersprite = sPlayerSprite` after export), this will ensure that UTMT compiles these to the correct index when importing. This mostly concerns magic number references to assets that are added by import, references to assets which exist in the base file should be ok but it's a good habit for code readibility to fix the magic numbers regardless.
+
 ### Options Files ###
 There are currently 2 optional text files you can include in your source folder to get some extra functionality.  
 Replace.txt allows you to designate assets in the base file which have been replaced by assets in the result file, the base assets will be renamed 
