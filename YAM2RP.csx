@@ -792,7 +792,7 @@ public void ImportMasks() {
             throw new ScriptException(spriteName + " is using an invalid numbering scheme. The script has stopped for your own protection.");
         }
         var prevFrameName = spriteName + "_" + prevframe.ToString() + ".png";
-        string[] previousFrameFiles = Directory.GetFiles(importFolder, prevFrameName);
+        string[] previousFrameFiles = Directory.GetFiles(importFolder, prevFrameName, SearchOption.AllDirectories);
         if (previousFrameFiles.Length < 1)
             throw new ScriptException(spriteName + " is missing one or more indexes. The detected missing index is: " + prevFrameName);
     }
