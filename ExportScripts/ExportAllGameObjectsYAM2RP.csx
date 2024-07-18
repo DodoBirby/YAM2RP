@@ -15,6 +15,9 @@ ScriptMessage("Select the GameObject output directory");
 string gameObjectOutputPath = PromptChooseDirectory("Export to where");
 if (gameObjectOutputPath == null) throw new ScriptException("The patch's output path was not set.");
 
+Directory.CreateDirectory(Path.Combine(gameObjectOutputPath, "Objects"));
+gameObjectOutputPath = Path.Combine(gameObjectOutputPath, "Objects");
+
 JsonWriterOptions writerOptions = new JsonWriterOptions { Indented = true };
 foreach (UndertaleGameObject gameObject in Data.GameObjects)
 {
