@@ -79,14 +79,15 @@ if (Directory.Exists(roomPath)) {
 }
 if (Directory.Exists(scriptPath))
 {
-    ImportScripts();
+    ImportScriptNames();
+    ScriptMessage("Imported script names");
+    ImportCode();
     ScriptMessage("Imported code");
 }
 // Fill in object and room data now that code is compiled with proper references
 if (Directory.Exists(objectPath)) {
     foreach (string file in Directory.GetFiles(objectPath, "*.json", SearchOption.AllDirectories)) {
         ImportObject(file);
-        
     }
     ScriptMessage("Imported objects");
 }
@@ -706,11 +707,31 @@ Do you want to continue?");
     }
 }
 
+public void ImportScriptNames() {
+    string[] dirFiles = Directory.GetFiles(scriptPath, "gml_Script*.gml", SearchOption.AllDirectories);
+    if (dirFiles.Length == 0)
+        throw new ScriptException("The selected folder is empty.");
+    else if (!dirFiles.Any(x => x.EndsWith(".gml")))
+        throw new ScriptException("The scripts folder doesn't contain any GML files.");
+
+    foreach (string file in dirFiles)
+    {
+        string fileName = Path.GetFileName(file);
+        // Create new script
+        if (Data.Scripts.ByName(fileName.Substring(11)) == null)
+        {
+            UndertaleScript scr = new UndertaleScript();
+            scr.Name = Data.Strings.MakeString(fileName.Substring(11));
+            Data.Scripts.Add(scr);
+        }
+    }
+}
+
 // Taken from ImportGML 
 // Credits:
 // Script by Jockeholm based off of a script by Kneesnap.
 // Major help and edited by Samuel Roy
-public void ImportScripts() {
+public void ImportCode() {
     string[] dirFiles = Directory.GetFiles(scriptPath, "*.gml", SearchOption.AllDirectories);
     if (dirFiles.Length == 0)
         throw new ScriptException("The selected folder is empty.");
@@ -720,7 +741,6 @@ public void ImportScripts() {
     foreach (string file in dirFiles)
     {
         string fileName = Path.GetFileName(file);
-        IncrementProgress();
         if (fileName.StartsWith("gml_Script")) {
             ImportGMLFile(file, doParse: true, throwOnError: true);
         } else {
