@@ -716,7 +716,7 @@ public void ImportScriptNames() {
 
     foreach (string file in dirFiles)
     {
-        string fileName = Path.GetFileName(file);
+        string fileName = Path.GetFileNameWithoutExtension(file);
         // Create new script
         if (Data.Scripts.ByName(fileName.Substring(11)) == null)
         {
