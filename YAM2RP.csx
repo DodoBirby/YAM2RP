@@ -995,7 +995,7 @@ public void ImportObject(string filePath) {
         CommentHandling = JsonCommentHandling.Skip
     };
 
-    UndertaleGameObject newGameObject = new UndertaleGameObject();
+    UndertaleGameObject newGameObject = null;
 
     Utf8JsonReader reader = new Utf8JsonReader(jsonUtf8Bytes, options);
 
@@ -1139,7 +1139,7 @@ public void ImportObject(string filePath) {
         newAction.Relative = ReadBool(ref reader);
         newAction.IsNot = ReadBool(ref reader);
 
-        if (actionName == null)
+        if (actionName == null || actionName == "")
         {
             newAction.ActionName = null;
         }
@@ -1265,7 +1265,7 @@ public void ImportRoom(string filePath) {
     stream.Read(jsonUtf8Bytes, 0, jsonUtf8Bytes.Length);
     stream.Close();
 
-    UndertaleRoom newRoom = new UndertaleRoom();
+    UndertaleRoom newRoom = null;
 
     JsonReaderOptions options = new JsonReaderOptions
     {
@@ -1313,7 +1313,7 @@ public void ImportRoom(string filePath) {
         newRoom.GravityY = ReadFloat(ref reader);
         newRoom.MetersPerPixel = ReadFloat(ref reader);
 
-        newRoom.Caption = (caption == null) ? null : new UndertaleString(caption);
+        newRoom.Caption = (caption == null || caption == "") ? null : new UndertaleString(caption);
 
         if ((newRoom.Caption != null) && !Data.Strings.Any(s => s == newRoom.Caption))
             Data.Strings.Add(newRoom.Caption);
