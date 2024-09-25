@@ -1440,12 +1440,12 @@ public void ImportRoom(string filePath) {
 
                 uint InstanceID = (uint) ReadNum(ref reader);
                 if (usedInstanceIDs.Contains(InstanceID)) {
-                    InstanceID = ++Data.GeneralInfo.LastObj;
+                    InstanceID = Data.GeneralInfo.LastObj++;
                 }
                 if (InstanceID >= 10000000) {
                     throw new ScriptException("Instance IDs too large, overflowing into Tile IDs");
                 }
-                Data.GeneralInfo.LastObj = Math.Max(InstanceID, Data.GeneralInfo.LastObj);
+                Data.GeneralInfo.LastObj = Math.Max(InstanceID + 1, Data.GeneralInfo.LastObj);
                 usedInstanceIDs.Add(InstanceID);
                 newObj.InstanceID = InstanceID;
 
@@ -1501,10 +1501,10 @@ public void ImportRoom(string filePath) {
                 newTile.TileDepth = (int) ReadNum(ref reader);
                 uint InstanceID = (uint) ReadNum(ref reader);
                 if (usedTileIDs.Contains(InstanceID)) {
-                    InstanceID = ++Data.GeneralInfo.LastTile;
+                    InstanceID = Data.GeneralInfo.LastTile++;
                 }
                 usedTileIDs.Add(InstanceID);
-                Data.GeneralInfo.LastTile = Math.Max(InstanceID, Data.GeneralInfo.LastTile);
+                Data.GeneralInfo.LastTile = Math.Max(InstanceID + 1, Data.GeneralInfo.LastTile);
                 newTile.InstanceID = InstanceID;
                 newTile.ScaleX = ReadFloat(ref reader);
                 newTile.ScaleY = ReadFloat(ref reader);
