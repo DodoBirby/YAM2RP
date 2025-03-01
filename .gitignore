@@ -399,3 +399,4 @@ FodyWeavers.xsd
 
 # TestFolder for YAM2RP
 TestFolder/
+/YAM2RP-CLI/Properties/launchSettings.json

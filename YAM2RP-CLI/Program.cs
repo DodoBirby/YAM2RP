@@ -1,4 +1,5 @@
 ﻿using UndertaleModLib;
+using YAM2RP;
 
 class Program
 {
@@ -14,6 +15,7 @@ class Program
 		using (var fileStream = File.OpenRead(undertaleDataPath))
 		{
 			var data = UndertaleIO.Read(fileStream);
+			Patcher.Patch(data, yam2rpPath);
 		}
 	}
 }
