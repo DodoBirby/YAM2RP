@@ -1,7 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using UndertaleModLib;
 using UndertaleModLib.Models;
-using System.Linq;
 
 namespace YAM2RP;
 
@@ -18,12 +17,12 @@ public class GameObjectJSON
 	public bool UsesPhysics { get; set; }
 	public bool IsSensor { get; set; }
 	public int CollisionShape { get; set; }
-	public double Density { get; set; }
-	public double Restitution {  get; set; }
-	public int Group {  get; set; }
-	public double LinearDamping { get; set; }
-	public double AngularDamping { get; set; }
-	public double Friction { get; set; }
+	public float Density { get; set; }
+	public float Restitution {  get; set; }
+	public uint Group {  get; set; }
+	public float LinearDamping { get; set; }
+	public float AngularDamping { get; set; }
+	public float Friction { get; set; }
 	public bool Awake { get; set; }
 	public bool Kinematic { get; set; }
 	public List<PhysicsVertex> PhysicsVertices { get; set; } = [];
@@ -113,6 +112,16 @@ public class ObjectEvent
 
 public class PhysicsVertex
 {
-	public double X { get; set; }
-	public double Y { get; set; }
+	public float X { get; set; }
+	public float Y { get; set; }
+
+	public UndertaleGameObject.UndertalePhysicsVertex ConvertToUnderVertex()
+	{
+		var newVert = new UndertaleGameObject.UndertalePhysicsVertex()
+		{
+			X = X,
+			Y = Y
+		};
+		return newVert;
+	}
 }

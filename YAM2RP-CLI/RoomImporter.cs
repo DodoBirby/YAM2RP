@@ -1,81 +1,91 @@
 ﻿using System.Text.Json;
 using UndertaleModLib;
 using UndertaleModLib.Models;
-using UndertaleModLib.Scripting;
 
 namespace YAM2RP;
 
 public class RoomImporter
 {
+	static readonly JsonSerializerOptions serializerOptions = CreateSerializerOptions();
+
+	static readonly List<RoomJSON> roomJSONs = [];
+
+	static JsonSerializerOptions CreateSerializerOptions()
+	{
+		var options = new JsonSerializerOptions
+		{
+			PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+		};
+		return options;
+	}
+
+	public static void ImportRoomBodies(UndertaleData data)
+	{
+		foreach (var room in roomJSONs)
+		{
+			var existingRoom = data.Rooms.ByName(room.Name) ?? throw new Exception("Room should exist by this point");
+			existingRoom.Width = room.Width;
+			existingRoom.Height = room.Height;
+			existingRoom.Speed = room.Speed;
+			existingRoom.Persistent = room.Persistent;
+			existingRoom.BackgroundColor = 0xFF000000 | room.BackgroundColor;
+			existingRoom.DrawBackgroundColor = room.DrawBackgroundColor;
+			existingRoom.Flags = (UndertaleRoom.RoomEntryFlags)room.Flags;
+			existingRoom.World = room.World;
+			existingRoom.Top = room.Top;
+			existingRoom.Left = room.Left;
+			existingRoom.Right = room.Right;
+			existingRoom.Bottom = room.Bottom;
+			existingRoom.GravityX = room.GravityX;
+			existingRoom.GravityY = room.GravityY;
+			existingRoom.MetersPerPixel = room.MetersPerPixel;
+			existingRoom.Caption = string.IsNullOrEmpty(room.Caption) ? null : data.Strings.MakeString(room.Caption);
+			existingRoom.CreationCodeId = data.Code.NameLookupIfNotNull(room.CreationCodeId);
+			existingRoom.Backgrounds.Clear();
+			foreach (var background in room.Backgrounds)
+			{
+				existingRoom.Backgrounds.Add(background.ConvertToUnderBackground(data, existingRoom));
+			}
+			existingRoom.Views.Clear();
+			foreach (var view in room.Views)
+			{
+				existingRoom.Views.Add(view.ConvertToUnderView(data));
+			}
+			existingRoom.GameObjects.Clear();
+			foreach (var obj in room.GameObjects)
+			{
+				existingRoom.GameObjects.Add(obj.ConvertToUnderObject(data));
+			}
+			existingRoom.Tiles.Clear();
+			foreach (var tile in room.Tiles)
+			{
+				existingRoom.Tiles.Add(tile.ConvertToUnderTile(data));
+			}
+			// TODO: Layers here
+		}
+	}
+
+	static void AddRoomIfNewName(UndertaleData data, RoomJSON room)
+	{
+		if (data.Rooms.ByName(room.Name) != null)
+		{
+			return;
+		}
+		var newRoom = new UndertaleRoom
+		{
+			Name = data.Strings.MakeString(room.Name)
+		};
+		data.Rooms.Add(newRoom);
+	}
+
 	public static void ImportRoomNames(UndertaleData data, string roomPath)
 	{
 		foreach (var file in Directory.EnumerateFiles(roomPath, "*.json", SearchOption.AllDirectories))
 		{
 			var stream = File.OpenRead(file);
-			var jsonUtf8Bytes = new byte[stream.Length];
-
-			stream.Read(jsonUtf8Bytes, 0, jsonUtf8Bytes.Length);
-			stream.Close();
-
-			var options = new JsonReaderOptions
-			{
-				AllowTrailingCommas = true,
-				CommentHandling = JsonCommentHandling.Skip
-			};
-
-			var reader = new Utf8JsonReader(jsonUtf8Bytes, options);
-
-			ReadAnticipateJSONObject(ref reader, JsonTokenType.StartObject);
-
-			AddRoomIfNewName(ref reader);
-		}
-		
-		void AddRoomIfNewName(ref Utf8JsonReader reader)
-		{
-			var name = ReadString(ref reader) ?? throw new Exception("ERROR: Object name was null - object name must be defined!");
-			if (data.Rooms.ByName(name) != null)
-			{
-				return;
-			}
-			else
-			{
-				var newRoom = new UndertaleRoom
-				{
-					Name = new UndertaleString(name)
-				};
-				data.Strings.Add(newRoom.Name);
-				data.Rooms.Add(newRoom);
-			}
-		}
-
-		string? ReadString(ref Utf8JsonReader reader)
-		{
-			while (reader.Read())
-			{
-				switch (reader.TokenType)
-				{
-					case JsonTokenType.PropertyName: continue;
-					case JsonTokenType.String: return reader.GetString()!;
-					case JsonTokenType.Null: return null;
-					default: throw new Exception($"ERROR: Unexpected token type. Expected String - found {reader.TokenType}");
-				}
-			}
-
-			throw new ScriptException("ERROR: Did not find value of expected type. Expected String.");
-		}
-
-		void ReadAnticipateJSONObject(ref Utf8JsonReader reader, JsonTokenType allowedTokenType)
-		{
-			while (reader.Read())
-			{
-				if (reader.TokenType == JsonTokenType.PropertyName)
-					continue;
-				if (reader.TokenType == allowedTokenType)
-					return;
-				throw new Exception($"ERROR: Unexpected token type. Expected {allowedTokenType} - found {reader.TokenType}");
-			}
-
-			throw new Exception("ERROR: Did not find value of expected type. Expected String.");
+			var room = JsonSerializer.Deserialize<RoomJSON>(stream, serializerOptions) ?? throw new Exception($"Failed to deserialize room from {file}");
+			roomJSONs.Add(room);
+			AddRoomIfNewName(data, room);
 		}
 	}
 }

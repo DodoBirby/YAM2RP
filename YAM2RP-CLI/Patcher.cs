@@ -24,6 +24,7 @@ public class Patcher
 		var shouldImportCode = Directory.Exists(scriptPath);
 		var shouldImportObjects = Directory.Exists(objectPath);
 		var shouldImportRooms = Directory.Exists(roomPath);
+		var shouldImportSounds = Directory.Exists(soundPath);
 
 		if (shouldReplaceNames)
 		{
@@ -51,8 +52,15 @@ public class Patcher
 			Console.WriteLine("Changed sprite options");
 		}
 
+		if (shouldImportSounds)
+		{
+			Console.WriteLine("Importing sounds");
+			SoundImporter.ImportSounds(data, soundPath);
+			Console.WriteLine("Imported sounds");
+		}
+
 		// Import order is important here
-		// We go CodeNames + ScriptNames -> ObjectNames and Linking Object methods to code entries -> Room names -> Code bodies 
+		// We go CodeNames + ScriptNames -> ObjectNames and Linking Object methods to code entries -> Room names -> Code bodies -> Object bodies -> Room bodies
 		if (shouldImportCode)
 		{
 			Console.WriteLine("Importing code names");
@@ -78,6 +86,21 @@ public class Patcher
 			Console.WriteLine("Importing code");
 			CodeImporter.ImportCode(data, scriptPath);
 		}
+		
+		if (shouldImportObjects)
+		{
+			Console.WriteLine("Importing object bodies");
+			ObjectImporter.ImportObjectBodies(data);
+			Console.WriteLine("Imported object bodies");
+		}
+
+		if (shouldImportRooms)
+		{
+			Console.WriteLine("Importing room bodies");
+			RoomImporter.ImportRoomBodies(data);
+			Console.WriteLine("Imported room bodies");
+		}
+		Console.WriteLine("Done!");
 	}
 
 	static void ReplaceNames(UndertaleData data, string[] lines)

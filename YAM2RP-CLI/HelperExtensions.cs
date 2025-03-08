@@ -1,4 +1,6 @@
-﻿namespace YAM2RP;
+﻿using UndertaleModLib;
+
+namespace YAM2RP;
 
 public static class HelperExtensions
 {
@@ -12,5 +14,14 @@ public static class HelperExtensions
 			}
 		}
 		return -1;
+	}
+
+	public static T? NameLookupIfNotNull<T>(this IList<T> list, string? name) where T : UndertaleNamedResource
+	{
+		if (name == null)
+		{
+			return default;
+		}
+		return list.ByName(name);
 	}
 }
