@@ -54,4 +54,13 @@ public static class HelperExtensions
 		embImage.Composite(resizedImage, texPageItem.SourceX, texPageItem.SourceY, CompositeOperator.Copy);
 		texPageItem.TexturePage.TextureData.Image = GMImage.FromMagickImage(embImage).ConvertToFormat(texPageItem.TexturePage.TextureData.Image.Format);
 	}
+
+	public static IEnumerable<(int, T)> Enumerate<T>(this IEnumerable<T> enumerable)
+	{
+		var i = 0;
+		foreach (var item in enumerable)
+		{
+			yield return (i++, item);
+		}
+	}
 }

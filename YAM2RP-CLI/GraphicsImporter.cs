@@ -2,6 +2,7 @@
 using UndertaleModLib;
 using ImageMagick;
 using UndertaleModLib.Models;
+using UndertaleModLib.Util;
 
 namespace YAM2RP;
 
@@ -9,7 +10,7 @@ public partial class GraphicsImporter
 {
 	static readonly Regex sprFrameRegex = SpriteFrameRegex();
 
-	static List<TextureInfo> ProcessImageFilesAndReplaceExistingTextures(UndertaleData data, IEnumerable<string> files)
+	static List<TextureInfo> ProcessImageFiles(UndertaleData data, IEnumerable<string> files)
 	{
 		var newTextures = new List<TextureInfo>();
 		foreach (var file in files)
@@ -24,56 +25,10 @@ public partial class GraphicsImporter
 			var frameNumber = int.TryParse(matches.Groups[2].Value, out var result) ? result : 0;
 			var type = GetGraphicsType(file);
 			var image = FileToImage(file);
-			if (AddToExisting(data, spriteName, image, frameNumber, type))
-			{
-				continue;
-			}
 			var texInfo = new TextureInfo(spriteName, image, frameNumber, type);
 			newTextures.Add(texInfo);
 		}
 		return newTextures;
-	}
-
-	static bool AddToExisting(UndertaleData data, string spriteName, MagickImage image, int frameNumber, GraphicsTypes type)
-	{
-		if (type == GraphicsTypes.Background)
-		{
-			var existingBackground = data.Backgrounds.ByName(spriteName);
-			if (existingBackground == null)
-			{
-				return false;
-			}
-			if (image.Height != existingBackground.Texture.SourceHeight || image.Width != existingBackground.Texture.SourceWidth)
-			{
-				Console.WriteLine($"WARNING: {spriteName} has size {existingBackground.Texture.SourceWidth}x{existingBackground.Texture.SourceHeight} in the base file but is being replaced by an " +
-					$"image of size {image.Width}x{image.Height}, the new image will be automatically resized");
-			}
-			existingBackground.Texture.ReplaceTextureYAM2RP(image);
-			Console.WriteLine($"Replaced texture for {spriteName}");
-			return true;
-		}
-		if (type == GraphicsTypes.Sprite)
-		{
-			var existingSprite = data.Sprites.ByName(spriteName);
-			if (existingSprite == null)
-			{
-				return false;
-			}
-			var existingTexture = existingSprite.Textures.ItemOrNull(frameNumber);
-			if (existingTexture == null)
-			{
-				return false;
-			}
-			if (image.Height != existingTexture.Texture.SourceHeight || image.Width != existingTexture.Texture.SourceWidth)
-			{
-				Console.WriteLine($"WARNING: {spriteName} has size {existingTexture.Texture.SourceWidth}x{existingTexture.Texture.SourceHeight} in the base file but is being replaced by an " +
-					$"image of size {image.Width}x{image.Height}, the new image will be automatically resized");
-			}
-			existingTexture.Texture.ReplaceTextureYAM2RP(image);
-			Console.WriteLine($"Replaced texture for {spriteName}_{frameNumber}");
-			return true;
-		}
-		throw new Exception("Unknown Graphics type");
 	}
 
 	static GraphicsTypes GetGraphicsType(string file)
@@ -197,7 +152,6 @@ public partial class GraphicsImporter
 
 	static void AddGraphicToDataAndTexturePageItem(UndertaleData data, UndertaleTexturePageItem texPageItem, TextureInfo texInfo)
 	{
-		texPageItem.ReplaceTextureYAM2RP(texInfo.Image);
 		if (texInfo.Type == GraphicsTypes.Background)
 		{
 			var newBackground = new UndertaleBackground()
@@ -217,10 +171,7 @@ public partial class GraphicsImporter
 				Texture = texPageItem
 			};
 			var existingSprite = data.Sprites.ByName(texInfo.Name);
-			if (existingSprite == null)
-			{
-				existingSprite = AddNewSprite(data, texInfo);
-			}
+			existingSprite ??= AddNewSprite(data, texInfo);
 			while (texInfo.Frame >= existingSprite.Textures.Count)
 			{
 				existingSprite.Textures.Add(texEntry);
@@ -231,21 +182,37 @@ public partial class GraphicsImporter
 		throw new Exception("Unknown Graphics type");
 	}
 
+	static List<MagickImage> CreateAtlasImages(List<Atlas> atlases)
+	{
+		var images = new List<MagickImage>();
+		foreach (var atlas in atlases)
+		{
+			var image = new MagickImage(new MagickColor(0, 0, 0, 0), 2048, 2048);
+			images.Add(image);
+			foreach (var node in atlas.Nodes)
+			{
+				image.Composite(node.TextureInfo.Image, node.X, node.Y, CompositeOperator.Copy);
+			}
+		}
+		return images;
+	}
+
 	public static void ImportGraphics(UndertaleData data, string graphicsPath)
 	{
-		var newTextures = ProcessImageFilesAndReplaceExistingTextures(data, Directory.EnumerateFiles(graphicsPath, "*.png", SearchOption.AllDirectories));
+		var newTextures = ProcessImageFiles(data, Directory.EnumerateFiles(graphicsPath, "*.png", SearchOption.AllDirectories));
 		var atlases = PackTextures(newTextures);
 		Console.WriteLine("Finished packing, beginning import");
 		var lastTexturePage = data.EmbeddedTextures.Count - 1;
 		var lastTexPageItem = data.TexturePageItems.Count - 1;
-		foreach (var atlas in atlases)
+		var atlasImages = CreateAtlasImages(atlases);
+		foreach ((var i, var atlas) in atlases.Enumerate())
 		{
 			var embTexture = new UndertaleEmbeddedTexture()
 			{
 				Name = data.Strings.MakeString($"Texture {++lastTexturePage}"),
 				TextureData = new UndertaleEmbeddedTexture.TexData()
 				{
-					Image = new UndertaleModLib.Util.GMImage(2048, 2048)
+					Image = GMImage.FromMagickImage(atlasImages[i])
 				}
 			};
 			data.EmbeddedTextures.Add(embTexture);
