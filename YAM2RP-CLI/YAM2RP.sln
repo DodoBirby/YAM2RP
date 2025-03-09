@@ -5,6 +5,8 @@ VisualStudioVersion = 17.10.35027.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "YAM2RP", "YAM2RP.csproj", "{F5276023-8D2A-4BF3-80BF-034EBE51D0ED}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UndertaleModLib", "..\UndertaleModTool\UndertaleModLib\UndertaleModLib.csproj", "{DACEE741-1BEA-4EDB-ADF3-778595EF3F2F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,14 @@ Global
 		{F5276023-8D2A-4BF3-80BF-034EBE51D0ED}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F5276023-8D2A-4BF3-80BF-034EBE51D0ED}.Release|x64.ActiveCfg = Release|Any CPU
 		{F5276023-8D2A-4BF3-80BF-034EBE51D0ED}.Release|x64.Build.0 = Release|Any CPU
+		{DACEE741-1BEA-4EDB-ADF3-778595EF3F2F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DACEE741-1BEA-4EDB-ADF3-778595EF3F2F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DACEE741-1BEA-4EDB-ADF3-778595EF3F2F}.Debug|x64.ActiveCfg = Debug|x64
+		{DACEE741-1BEA-4EDB-ADF3-778595EF3F2F}.Debug|x64.Build.0 = Debug|x64
+		{DACEE741-1BEA-4EDB-ADF3-778595EF3F2F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DACEE741-1BEA-4EDB-ADF3-778595EF3F2F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DACEE741-1BEA-4EDB-ADF3-778595EF3F2F}.Release|x64.ActiveCfg = Release|x64
+		{DACEE741-1BEA-4EDB-ADF3-778595EF3F2F}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
