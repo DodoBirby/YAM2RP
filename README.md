@@ -1,11 +1,9 @@
 # YAM2RP
 ## Yet Another Metroid 2 Remake Patcher ##
-This [Undertale Mod Tool](https://github.com/UnderminersTeam/UndertaleModTool) script is designed to support a modding workflow where changes are made to exported source files that are then patched into a data.win instead of the usual UTMT workflow of making changes directly in the data.win. This workflow makes it easier for multiple modders to collaborate on one project since everyone on the team can get the same data.win by supplying the patcher with the same base file.
+This Command Line Application is designed for gamemaker modding alongside [Undertale Mod Tool](https://github.com/UnderminersTeam/UndertaleModTool) to support a workflow where changes are made to exported source files that are then patched into a data.win instead of the usual UTMT workflow of making changes directly in the data.win. This workflow makes it easier for multiple modders to collaborate on one project since everyone on the team can get the same data.win by supplying the patcher with the same base file.
 
-To download the script the recommended method is to clone this repo using git. Alternatively you can just download the code as a zip.  
-To use the script see the [How to Use](#how-to-use) section.
+To use the app see the [How to Use](#how-to-use) section.
 
-Most import scripts are not written by me, credits are in comments above the corresponding function.
 ### Folder Structure ###
 All Folders are optional  
 - Code: Contains all the gml files, they should follow GMS naming conventions like gml_Object_testObject_Step_0.gml or gml_Script_testscript.gml otherwise they might not import properly
@@ -27,6 +25,6 @@ before any importing occurs.
 SpriteOptions.txt allows you to customise the margins, flags, sepMasks, and Origin positions of sprites.
 
 ### How to Use ###
-In UTMT you can run scripts using Scripts > Run other script... then to run YAM2RP select YAM2RP.csx from the file select.
+Download an executable from the [releases](https://github.com/DodoBirby/YAM2RP/releases) section. Then run the executable in a command prompt/terminal the syntax is `yam2rp [-f] <Data Path> <Yam2rp Project Path> <Output Path>`
 
 
