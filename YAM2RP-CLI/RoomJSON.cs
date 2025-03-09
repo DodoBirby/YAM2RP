@@ -109,8 +109,8 @@ public class RoomGameObject
 	public string? ObjectDefinition { get; set; }
 	public uint InstanceId { get; set; }
 	public string? CreationCode { get; set; }
-	public int ScaleX { get; set; }
-	public int ScaleY { get; set; }
+	public float ScaleX { get; set; }
+	public float ScaleY { get; set; }
 	public uint Color {  get; set; }
 	public float Rotation {  get; set; }
 	public string? PreCreateCode { get; set; }
@@ -155,8 +155,8 @@ public class RoomTile
 	public uint Height { get; set; }
 	public int TileDepth { get; set; }
 	public int InstanceId { get; set; }
-	public int ScaleX { get; set; }
-	public int ScaleY { get; set; }
+	public float ScaleX { get; set; }
+	public float ScaleY { get; set; }
 	public uint Color { get; set; }
 
 	public UndertaleRoom.Tile ConvertToUnderTile(UndertaleData data)

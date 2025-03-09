@@ -1,4 +1,7 @@
-﻿using UndertaleModLib;
+﻿using ImageMagick;
+using UndertaleModLib;
+using UndertaleModLib.Models;
+using UndertaleModLib.Util;
 
 namespace YAM2RP;
 
@@ -42,5 +45,13 @@ public static class HelperExtensions
 	public static int GetWidth(this Array array)
 	{
 		return array.GetLength(1);
+	}
+
+	public static void ReplaceTextureYAM2RP(this UndertaleTexturePageItem texPageItem, MagickImage image)
+	{
+		using var resizedImage = TextureWorker.ResizeImage(image, texPageItem.SourceWidth, texPageItem.SourceHeight);
+		var embImage = TextureCache.GetEmbeddedTexture(texPageItem.TexturePage);
+		embImage.Composite(resizedImage, texPageItem.SourceX, texPageItem.SourceY, CompositeOperator.Copy);
+		texPageItem.TexturePage.TextureData.Image = GMImage.FromMagickImage(embImage).ConvertToFormat(texPageItem.TexturePage.TextureData.Image.Format);
 	}
 }

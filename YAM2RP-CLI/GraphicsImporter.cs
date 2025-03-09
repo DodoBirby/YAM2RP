@@ -48,7 +48,8 @@ public partial class GraphicsImporter
 				Console.WriteLine($"WARNING: {spriteName} has size {existingBackground.Texture.SourceWidth}x{existingBackground.Texture.SourceHeight} in the base file but is being replaced by an " +
 					$"image of size {image.Width}x{image.Height}, the new image will be automatically resized");
 			}
-			existingBackground.Texture.ReplaceTexture(image);
+			existingBackground.Texture.ReplaceTextureYAM2RP(image);
+			Console.WriteLine($"Replaced texture for {spriteName}");
 			return true;
 		}
 		if (type == GraphicsTypes.Sprite)
@@ -68,7 +69,8 @@ public partial class GraphicsImporter
 				Console.WriteLine($"WARNING: {spriteName} has size {existingTexture.Texture.SourceWidth}x{existingTexture.Texture.SourceHeight} in the base file but is being replaced by an " +
 					$"image of size {image.Width}x{image.Height}, the new image will be automatically resized");
 			}
-			existingTexture.Texture.ReplaceTexture(image);
+			existingTexture.Texture.ReplaceTextureYAM2RP(image);
+			Console.WriteLine($"Replaced texture for {spriteName}_{frameNumber}");
 			return true;
 		}
 		throw new Exception("Unknown Graphics type");
@@ -148,6 +150,7 @@ public partial class GraphicsImporter
 
 	static List<Atlas> PackTextures(List<TextureInfo> newTextures)
 	{
+		Console.WriteLine($"Packing {newTextures.Count} textures");
 		var atlases = new List<Atlas>();
 		var atlas = new Atlas(2048, 2048);
 		foreach (var texture in newTextures.OrderByDescending(x => x.Image.Width * x.Image.Height))
@@ -163,17 +166,17 @@ public partial class GraphicsImporter
 		return atlases;
 	}
 
-	static UndertaleSprite AddNewSprite(UndertaleData data, UndertaleTexturePageItem texPageItem, TextureInfo texInfo)
+	static UndertaleSprite AddNewSprite(UndertaleData data, TextureInfo texInfo)
 	{
 		var newSprite = new UndertaleSprite()
 		{
 			Name = data.Strings.MakeString(texInfo.Name),
-			Width = texInfo.Image.Width,
-			Height = texInfo.Image.Height,
+			Width = (uint)texInfo.Image.Width,
+			Height = (uint)texInfo.Image.Height,
 			MarginLeft = 0,
-			MarginRight = (int)texInfo.Image.Width - 1,
+			MarginRight = texInfo.Image.Width - 1,
 			MarginTop = 0,
-			MarginBottom = (int)texInfo.Image.Height - 1,
+			MarginBottom = texInfo.Image.Height - 1,
 			OriginX = 0,
 			OriginY = 0
 		};
@@ -194,7 +197,7 @@ public partial class GraphicsImporter
 
 	static void AddGraphicToDataAndTexturePageItem(UndertaleData data, UndertaleTexturePageItem texPageItem, TextureInfo texInfo)
 	{
-		texPageItem.ReplaceTexture(texInfo.Image);
+		texPageItem.ReplaceTextureYAM2RP(texInfo.Image);
 		if (texInfo.Type == GraphicsTypes.Background)
 		{
 			var newBackground = new UndertaleBackground()
@@ -216,7 +219,7 @@ public partial class GraphicsImporter
 			var existingSprite = data.Sprites.ByName(texInfo.Name);
 			if (existingSprite == null)
 			{
-				existingSprite = AddNewSprite(data, texPageItem, texInfo);
+				existingSprite = AddNewSprite(data, texInfo);
 			}
 			while (texInfo.Frame >= existingSprite.Textures.Count)
 			{
@@ -232,6 +235,7 @@ public partial class GraphicsImporter
 	{
 		var newTextures = ProcessImageFilesAndReplaceExistingTextures(data, Directory.EnumerateFiles(graphicsPath, "*.png", SearchOption.AllDirectories));
 		var atlases = PackTextures(newTextures);
+		Console.WriteLine("Finished packing, beginning import");
 		var lastTexturePage = data.EmbeddedTextures.Count - 1;
 		var lastTexPageItem = data.TexturePageItems.Count - 1;
 		foreach (var atlas in atlases)
@@ -265,6 +269,7 @@ public partial class GraphicsImporter
 				data.TexturePageItems.Add(texPageItem);
 				AddGraphicToDataAndTexturePageItem(data, texPageItem, node.TextureInfo);
 			}
+			embTexture.TextureData.Image = embTexture.TextureData.Image.ConvertToPng();
 		}
 	}
 

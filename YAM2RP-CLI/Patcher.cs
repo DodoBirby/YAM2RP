@@ -102,7 +102,6 @@ public class Patcher
 			RoomImporter.ImportRoomBodies(data);
 			Console.WriteLine("Imported room bodies");
 		}
-		Console.WriteLine("Done!");
 	}
 
 	static void ReplaceNames(UndertaleData data, string[] lines)

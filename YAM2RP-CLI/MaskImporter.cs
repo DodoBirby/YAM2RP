@@ -28,7 +28,7 @@ public class MaskImporter
 			{
 				throw new Exception($"{fileNameWithExtension} could not be imported as the sprite does not exist");
 			}
-			var (width, height) = TextureWorker.GetImageSizeFromFile(fileNameWithExtension);
+			var (width, height) = TextureWorker.GetImageSizeFromFile(file);
 			if (sprite.Width != width || sprite.Height != height)
 			{
 				throw new Exception($"{fileNameWithExtension} is not the proper size");

@@ -1,5 +1,6 @@
 ﻿using CommandLine;
 using CommandLine.Text;
+using System.Diagnostics;
 using UndertaleModLib;
 
 namespace YAM2RP;
@@ -63,6 +64,8 @@ class Program
 		{
 			data = UndertaleIO.Read(fileStream);
 		}
+		var sw = new Stopwatch();
+		sw.Start();
 		Patcher.Patch(data, yam2rpPath);
 		using (var fileStream = File.OpenWrite(outputPath))
 		{
@@ -70,7 +73,8 @@ class Program
 			UndertaleIO.Write(fileStream, data);
 			Console.WriteLine("Finished writing");
 		}
-		Console.WriteLine("Patching Complete!");
+		sw.Stop();
+		Console.WriteLine($"Patching Complete in {sw.Elapsed.TotalSeconds}s");
 	}
 
 	static bool GetYesOrNoFromUser()

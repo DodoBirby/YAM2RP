@@ -63,7 +63,7 @@ public class ObjectAction
 		};
 
 		var actionName = ActionName;
-		if (actionName == "")
+		if (string.IsNullOrEmpty(actionName))
 		{
 			newAction.ActionName = null;
 		}
