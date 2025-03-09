@@ -24,4 +24,23 @@ public static class HelperExtensions
 		}
 		return list.ByName(name);
 	}
+
+	public static T? ItemOrNull<T>(this IList<T> list, int index)
+	{
+		if (index >= list.Count)
+		{
+			return default;
+		}
+		return list[index];
+	}
+
+	public static int GetHeight(this Array array)
+	{
+		return array.GetLength(0);
+	}
+
+	public static int GetWidth(this Array array)
+	{
+		return array.GetLength(1);
+	}
 }

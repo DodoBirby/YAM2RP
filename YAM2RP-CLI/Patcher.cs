@@ -35,7 +35,9 @@ public class Patcher
 
 		if (shouldImportGraphics)
 		{
-			// TODO: Import Graphics
+			Console.WriteLine("Importing Graphics");
+			GraphicsImporter.ImportGraphics(data, graphicsPath);
+			Console.WriteLine("Imported Graphics");
 		}
 
 		if (shouldImportMasks)
