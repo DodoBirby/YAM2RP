@@ -52,20 +52,34 @@ public partial class GraphicsImporter
 		return new MagickImage(file);
 	}
 
-	static bool CanFit(Atlas atlas, TextureInfo texture, int x, int y)
+	// This is false for out of bounds because an out of bounds point is not occupied by another image
+	static bool IsOccupied(Atlas atlas, int x, int y)
 	{
-		if (atlas.Mask[y, x]
-			|| atlas.Mask[y, x + texture.Image.Width - 1]
-			|| atlas.Mask[y + texture.Image.Height - 1, x]
-			|| atlas.Mask[y + texture.Image.Height - 1, x + texture.Image.Width - 1])
+		if (x < 0 || x >= atlas.Mask.GetWidth() || y < 0 || y >= atlas.Mask.GetHeight())
 		{
 			return false;
 		}
-		for (int dy = 0; dy < texture.Image.Height; dy++)
+		return atlas.Mask[y, x];
+	}
+
+	static bool CanFit(Atlas atlas, TextureInfo texture, int imageX, int imageY, int margin)
+	{
+		var imageHeightWithMargin = texture.Image.Height + margin;
+		var imageWidthWithMargin = texture.Image.Width + margin;
+		var x = imageX - margin;
+		var y = imageY - margin;
+		if (IsOccupied(atlas, x, y)
+			|| IsOccupied(atlas, x, y + imageHeightWithMargin - 1)
+			|| IsOccupied(atlas, x + imageWidthWithMargin - 1, y)
+			|| IsOccupied(atlas, x + imageWidthWithMargin - 1, y + imageHeightWithMargin - 1))
 		{
-			for (int dx = 0; dx < texture.Image.Width; dx++)
+			return false;
+		}
+		for (int dy = 0; dy < imageHeightWithMargin + margin; dy++)
+		{
+			for (int dx = 0; dx < imageWidthWithMargin + margin; dx++)
 			{
-				if (atlas.Mask[y + dy, x + dx])
+				if (IsOccupied(atlas, x + dx, y + dy))
 				{
 					return false;
 				}
@@ -91,7 +105,7 @@ public partial class GraphicsImporter
 		{
 			for (int x = 0; x < atlas.Mask.GetWidth() - texture.Image.Width + 1; x++)
 			{
-				if (CanFit(atlas, texture, x, y))
+				if (CanFit(atlas, texture, x, y, 4))
 				{
 					SetMask(atlas, texture, x, y);
 					var node = new Node(x, y, texture);
@@ -182,16 +196,26 @@ public partial class GraphicsImporter
 		throw new Exception("Unknown Graphics type");
 	}
 
-	static List<MagickImage> CreateAtlasImages(List<Atlas> atlases)
+	static List<MagickImage> CreateAtlasImages(List<Atlas> atlases, int extrudeAmount)
 	{
 		var images = new List<MagickImage>();
+		var distortSettings = new DistortSettings
+		{
+			Viewport = new MagickGeometry()
+		};
 		foreach (var atlas in atlases)
 		{
 			var image = new MagickImage(new MagickColor(0, 0, 0, 0), 2048, 2048);
 			images.Add(image);
 			foreach (var node in atlas.Nodes)
 			{
-				image.Composite(node.TextureInfo.Image, node.X, node.Y, CompositeOperator.Copy);
+				using var newImage = node.TextureInfo.Image.Clone();
+				distortSettings.Viewport.X = -extrudeAmount;
+				distortSettings.Viewport.Y = -extrudeAmount;
+				distortSettings.Viewport.Width = newImage.Width + extrudeAmount * 2;
+				distortSettings.Viewport.Height = newImage.Height + extrudeAmount * 2;
+				newImage.Distort(DistortMethod.ScaleRotateTranslate, distortSettings, 0);
+				image.Composite(newImage, node.X - extrudeAmount, node.Y - extrudeAmount, CompositeOperator.Copy);
 			}
 		}
 		return images;
@@ -204,7 +228,7 @@ public partial class GraphicsImporter
 		Console.WriteLine("Finished packing, beginning import");
 		var lastTexturePage = data.EmbeddedTextures.Count - 1;
 		var lastTexPageItem = data.TexturePageItems.Count - 1;
-		var atlasImages = CreateAtlasImages(atlases);
+		var atlasImages = CreateAtlasImages(atlases, 1);
 		foreach ((var i, var atlas) in atlases.Enumerate())
 		{
 			var embTexture = new UndertaleEmbeddedTexture()
