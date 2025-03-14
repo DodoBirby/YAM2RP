@@ -21,11 +21,6 @@ if (outputPath == null) throw new ScriptException("The room exporter's output pa
 Directory.CreateDirectory(Path.Combine(outputPath, "Rooms"));
 string roomOutputPath = Path.Combine(outputPath, "Rooms");
 
-Directory.CreateDirectory(Path.Combine(outputPath, "Code"));
-string codeFolder = Path.Combine(outputPath, "Code");
-
-ThreadLocal<GlobalDecompileContext> DECOMPILE_CONTEXT = new ThreadLocal<GlobalDecompileContext>(() => new GlobalDecompileContext(Data, false));
-
 int failed = 0;
 
 JsonWriterOptions writerOptions = new JsonWriterOptions { Indented = true };
@@ -56,12 +51,7 @@ void WriteString(Utf8JsonWriter writer, string propertyName, UndertaleString str
 // TODO: Use custom enum encoders
 
 void WriteRoomToJson(UndertaleRoom room)
-{
-	// Writing creation code of the room
-	if (room.CreationCodeId != null) {
-		DumpCode(room.CreationCodeId);
-	}
-	
+{	
     using MemoryStream stream = new MemoryStream();
     using Utf8JsonWriter writer = new Utf8JsonWriter(stream, writerOptions);
     writer.WriteStartObject();
@@ -148,15 +138,7 @@ void WriteRoomToJson(UndertaleRoom room)
     if (room.GameObjects != null)
     {
         foreach (UndertaleRoom.GameObject go in room.GameObjects)
-        {
-			// Writing creation code and pre create code of every object
-			if (go.CreationCode != null) {
-				DumpCode(go.CreationCode);
-			}
-			if (go.PreCreateCode != null) {
-				DumpCode(go.PreCreateCode);
-			}
-			
+        {	
             writer.WriteStartObject();
             if (go != null)
             {
@@ -433,48 +415,4 @@ void WriteRoomToJson(UndertaleRoom room)
     writer.Flush();
 
     File.WriteAllBytes(Path.Join(roomOutputPath, room.Name.Content) + ".json", stream.ToArray());
-}
-
-void DumpCode(UndertaleCode code)
-{
-    string path = Path.Combine(codeFolder, code.Name.Content + ".gml");
-    if (code.ParentEntry == null)
-    {
-        try
-        {
-            File.WriteAllText(path, (code != null ? Decompiler.Decompile(code, DECOMPILE_CONTEXT.Value) : ""));
-        }
-        catch (Exception e)
-        {
-            if (!(Directory.Exists(Path.Combine(codeFolder, "Failed"))))
-            {
-                Directory.CreateDirectory(Path.Combine(codeFolder, "Failed"));
-            }
-            path = Path.Combine(codeFolder, "Failed", code.Name.Content + ".gml");
-            File.WriteAllText(path, "/*\nDECOMPILER FAILED!\n\n" + e.ToString() + "\n*/");
-            failed += 1;
-        }
-    }
-    else
-    {
-        if (!(Directory.Exists(Path.Combine(codeFolder, "Duplicates"))))
-        {
-            Directory.CreateDirectory(Path.Combine(codeFolder, "Duplicates"));
-        }
-        try
-        {
-            path = Path.Combine(codeFolder, "Duplicates", code.Name.Content + ".gml");
-            File.WriteAllText(path, (code != null ? Decompiler.Decompile(code, DECOMPILE_CONTEXT.Value).Replace("@@This@@()", "self/*@@This@@()*/") : ""));
-        }
-        catch (Exception e)
-        {
-            if (!(Directory.Exists(Path.Combine(codeFolder, "Duplicates", "Failed"))))
-            {
-                Directory.CreateDirectory(Path.Combine(codeFolder, "Duplicates", "Failed"));
-            }
-            path = Path.Combine(codeFolder, "Duplicates", "Failed", code.Name.Content + ".gml");
-            File.WriteAllText(path, "/*\nDECOMPILER FAILED!\n\n" + e.ToString() + "\n*/");
-            failed += 1;
-        }
-    }
 }
