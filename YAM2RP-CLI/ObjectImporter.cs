@@ -52,12 +52,18 @@ public class ObjectImporter
 
 	public static void ImportObjectNamesAndMethods(UndertaleData data, string objectPath)
 	{
+		var underGameObjects = new List<UndertaleGameObject>();
 		foreach (var file in Directory.EnumerateFiles(objectPath, "*.json", SearchOption.AllDirectories))
 		{
 			var stream = File.OpenRead(file);
 			var gameObject = JsonSerializer.Deserialize<GameObjectJSON>(stream, serializerOptions) ?? throw new Exception($"Failed to deserialise game object from {file}");
 			gameObjectJSONs.Add(gameObject);
 			var underGameObject = AddObjectIfNewName(gameObject);
+			underGameObjects.Add(underGameObject);
+		}
+
+		foreach ((var gameObject, var underGameObject) in gameObjectJSONs.Zip(underGameObjects))
+		{
 			AddObjectMethods(underGameObject, gameObject);
 		}
 
