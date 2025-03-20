@@ -67,7 +67,7 @@ class Program
 		var sw = new Stopwatch();
 		sw.Start();
 		Patcher.Patch(data, yam2rpPath);
-		using (var fileStream = File.OpenWrite(outputPath))
+		using (var fileStream = File.Open(outputPath, FileMode.Create))
 		{
 			Console.WriteLine($"Writing modified data to {outputPath}");
 			UndertaleIO.Write(fileStream, data);
