@@ -168,14 +168,20 @@ public partial class GraphicsImporter
 	{
 		if (texInfo.Type == GraphicsTypes.Background)
 		{
-			var newBackground = new UndertaleBackground()
+			var existingBackground = data.Backgrounds.ByName(texInfo.Name);
+			if (existingBackground == null)
 			{
-				Name = data.Strings.MakeString(texInfo.Name),
-				Texture = texPageItem,
-				Transparent = false,
-				Preload = false
-			};
-			data.Backgrounds.Add(newBackground);
+				var newBackground = new UndertaleBackground()
+				{
+					Name = data.Strings.MakeString(texInfo.Name),
+					Texture = texPageItem,
+					Transparent = false,
+					Preload = false
+				};
+				data.Backgrounds.Add(newBackground);
+				return;
+			}
+			existingBackground.Texture = texPageItem;
 			return;
 		}
 		if (texInfo.Type == GraphicsTypes.Sprite)
