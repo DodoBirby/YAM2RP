@@ -1,4 +1,5 @@
 ﻿using UndertaleModLib;
+using UndertaleModLib.Compiler;
 using UndertaleModLib.Models;
 
 namespace YAM2RP;
@@ -79,7 +80,9 @@ public class CodeImporter
 		{
 			LinkScript(data, codeName, code);
 		}
-		code.ReplaceGML(codeText, data);
+		var compileGroup = new CompileGroup(data);
+		compileGroup.QueueCodeReplace(code, codeText);
+		compileGroup.Compile();
     }
 
 	public static void ImportCode(UndertaleData data, string codePath)

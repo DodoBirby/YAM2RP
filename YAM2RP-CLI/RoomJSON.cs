@@ -149,8 +149,8 @@ public class RoomTile
 	public int Y { get; set; }
 	public string? BackgroundDefinition { get; set; }
 	public string? SpriteDefinition { get; set; }
-	public uint SourceX { get; set; }
-	public uint SourceY { get; set; }
+	public int SourceX { get; set; }
+	public int SourceY { get; set; }
 	public uint Width { get; set; }
 	public uint Height { get; set; }
 	public int TileDepth { get; set; }

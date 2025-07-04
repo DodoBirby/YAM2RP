@@ -53,7 +53,7 @@ public partial class GraphicsImporter
 	}
 
 	// This is false for out of bounds because an out of bounds point is not occupied by another image
-	static bool IsOccupied(Atlas atlas, int x, int y)
+	static bool IsOccupied(Atlas atlas, long x, long y)
 	{
 		if (x < 0 || x >= atlas.Mask.GetWidth() || y < 0 || y >= atlas.Mask.GetHeight())
 		{
@@ -140,12 +140,12 @@ public partial class GraphicsImporter
 		var newSprite = new UndertaleSprite()
 		{
 			Name = data.Strings.MakeString(texInfo.Name),
-			Width = (uint)texInfo.Image.Width,
-			Height = (uint)texInfo.Image.Height,
+			Width = texInfo.Image.Width,
+			Height = texInfo.Image.Height,
 			MarginLeft = 0,
-			MarginRight = texInfo.Image.Width - 1,
+			MarginRight = (int)texInfo.Image.Width - 1,
 			MarginTop = 0,
-			MarginBottom = texInfo.Image.Height - 1,
+			MarginBottom = (int)texInfo.Image.Height - 1,
 			OriginX = 0,
 			OriginY = 0
 		};
@@ -202,10 +202,10 @@ public partial class GraphicsImporter
 		throw new Exception("Unknown Graphics type");
 	}
 
-	static List<MagickImage> CreateAtlasImages(List<Atlas> atlases, int extrudeAmount)
+	static List<MagickImage> CreateAtlasImages(List<Atlas> atlases, uint extrudeAmount)
 	{
 		var images = new List<MagickImage>();
-		var distortSettings = new DistortSettings
+		var distortSettings = new DistortSettings(DistortMethod.ScaleRotateTranslate)
 		{
 			Viewport = new MagickGeometry()
 		};
@@ -216,12 +216,12 @@ public partial class GraphicsImporter
 			foreach (var node in atlas.Nodes)
 			{
 				using var newImage = node.TextureInfo.Image.Clone();
-				distortSettings.Viewport.X = -extrudeAmount;
-				distortSettings.Viewport.Y = -extrudeAmount;
+				distortSettings.Viewport.X = -(int)extrudeAmount;
+				distortSettings.Viewport.Y = -(int)extrudeAmount;
 				distortSettings.Viewport.Width = newImage.Width + extrudeAmount * 2;
 				distortSettings.Viewport.Height = newImage.Height + extrudeAmount * 2;
-				newImage.Distort(DistortMethod.ScaleRotateTranslate, distortSettings, 0);
-				image.Composite(newImage, node.X - extrudeAmount, node.Y - extrudeAmount, CompositeOperator.Copy);
+				newImage.Distort(distortSettings, 0);
+				image.Composite(newImage, (int)(node.X - extrudeAmount), (int)(node.Y - extrudeAmount), CompositeOperator.Copy);
 			}
 		}
 		return images;
