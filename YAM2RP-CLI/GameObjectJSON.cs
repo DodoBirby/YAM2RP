@@ -82,6 +82,28 @@ public class ObjectAction
 		}
 		return newAction;
 	}
+
+	public static ObjectAction ConvertFromUnderAction(UndertaleGameObject.EventAction eventAction)
+	{
+		var newAction = new ObjectAction()
+		{
+			LibId = (int)eventAction.LibID,
+			Id = (int)eventAction.ID,
+			Kind = (int)eventAction.Kind,
+			UseRelative = eventAction.UseRelative,
+			IsQuestion = eventAction.IsQuestion,
+			UseApplyTo= eventAction.UseApplyTo,
+			ExeType = (int)eventAction.ExeType,
+			ArgumentCount = (int)eventAction.ArgumentCount,
+			Who = eventAction.Who,
+			Relative = eventAction.Relative,
+			IsNot = eventAction.IsNot,
+			ActionName = eventAction.ActionName.Content,
+			CodeId = eventAction.CodeId.Name.Content
+		};
+
+		return newAction;
+	}
 }
 
 public class ObjectEvent
@@ -108,6 +130,23 @@ public class ObjectEvent
 		}
 		return newEvent;
 	}
+
+	const int CollisionEventIndex = 4;
+
+	public static ObjectEvent ConvertFromUnderEvent(UndertaleGameObject.Event underEvent, int eventIndex, UndertaleData data)
+	{
+		var newEvent = new ObjectEvent();
+		if (eventIndex == CollisionEventIndex)
+		{
+			newEvent.EventSubtype = data.GameObjects[(int)underEvent.EventSubtype].Name.Content;
+		}
+		else
+		{
+			newEvent.EventSubtype = underEvent.EventSubtype.ToString();
+		}
+		newEvent.Actions = underEvent.Actions.Select(ObjectAction.ConvertFromUnderAction).ToList();
+		return newEvent;
+	}
 }
 
 public class PhysicsVertex
@@ -121,6 +160,16 @@ public class PhysicsVertex
 		{
 			X = X,
 			Y = Y
+		};
+		return newVert;
+	}
+
+	public static PhysicsVertex ConvertFromUnderVertex(UndertaleGameObject.UndertalePhysicsVertex vert)
+	{
+		var newVert = new PhysicsVertex()
+		{
+			X = vert.X,
+			Y = vert.Y
 		};
 		return newVert;
 	}

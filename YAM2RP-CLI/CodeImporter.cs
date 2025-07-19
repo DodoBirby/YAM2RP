@@ -71,7 +71,7 @@ public class CodeImporter
 		script.Code = code;
 	}
 
-	static void ImportGMLFile(UndertaleData data, string fileName)
+	static void ImportGMLFile(CompileGroup group, UndertaleData data, string fileName)
 	{
 		var codeName = Path.GetFileNameWithoutExtension(fileName);
 		var codeText = File.ReadAllText(fileName);
@@ -80,16 +80,17 @@ public class CodeImporter
 		{
 			LinkScript(data, codeName, code);
 		}
-		var compileGroup = new CompileGroup(data);
-		compileGroup.QueueCodeReplace(code, codeText);
-		compileGroup.Compile();
+		group.QueueCodeReplace(code, codeText);
+		
     }
 
 	public static void ImportCode(UndertaleData data, string codePath)
 	{
+		var group = new CompileGroup(data);
 		foreach (var file in Directory.EnumerateFiles(codePath, "*.gml", SearchOption.AllDirectories))
 		{
-			ImportGMLFile(data, file);
+			ImportGMLFile(group, data, file);
 		}
+		group.Compile();
 	}
 }
