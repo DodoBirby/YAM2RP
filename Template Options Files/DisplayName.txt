@@ -1,0 +1,3 @@
+# This file designates the display name of the mod, the first non-comment non-whitespace line will be taken as the display name
+# A '#' at the start of a line indicates a comment
+My Really Cool AM2R Mod

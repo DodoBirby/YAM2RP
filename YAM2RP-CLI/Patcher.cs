@@ -16,7 +16,9 @@ public class Patcher
 
 		var nameReplacePath = Path.Combine(yam2rpPath, "Replace.txt");
 		var spriteOptionsPath = Path.Combine(yam2rpPath, "SpriteOptions.txt");
+		var displayNamePath = Path.Combine(yam2rpPath, "DisplayName.txt");
 
+		var shouldSetDisplayName = File.Exists(displayNamePath);
 		var shouldReplaceNames = File.Exists(nameReplacePath);
 		var shouldImportGraphics = Directory.Exists(graphicsPath);
 		var shouldImportMasks = Directory.Exists(maskPath);
@@ -25,6 +27,13 @@ public class Patcher
 		var shouldImportObjects = Directory.Exists(objectPath);
 		var shouldImportRooms = Directory.Exists(roomPath);
 		var shouldImportSounds = Directory.Exists(soundPath);
+
+		if (shouldSetDisplayName)
+		{
+			Console.WriteLine("Setting display name");
+			ImportDisplayName(data, File.ReadAllLines(displayNamePath));
+			Console.WriteLine($"Set display name to {data.GeneralInfo.DisplayName.Content}");
+		}
 
 		if (shouldReplaceNames)
 		{
@@ -134,6 +143,21 @@ public class Patcher
 			}
 			res.Name = new UndertaleString(newName);
 			data.Strings.Add(res.Name);
+		}
+	}
+
+	static void ImportDisplayName(UndertaleData data, string[] lines)
+	{
+		foreach (var line in lines)
+		{
+			var trimmedLine = line.Trim();
+			if (trimmedLine == "" || trimmedLine[0] == '#')
+			{
+				continue;
+			}
+			var displayName = trimmedLine;
+			data.GeneralInfo.DisplayName = data.Strings.MakeString(displayName);
+			break;
 		}
 	}
 
