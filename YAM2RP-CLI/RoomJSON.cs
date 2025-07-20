@@ -60,6 +60,24 @@ public class Background
 		};
 		return newBackground;
 	}
+
+	public static Background ConvertFromUnderBackground(UndertaleRoom.Background background)
+	{
+		var newBackground = new Background()
+		{
+			Enabled = background.Enabled,
+			Foreground = background.Foreground,
+			BackgroundDefinition = background.BackgroundDefinition?.Name.Content,
+			X = background.X,
+			Y = background.Y,
+			TiledVertically = background.TiledVertically,
+			TiledHorizontally = background.TiledHorizontally,
+			SpeedX = background.SpeedX,
+			SpeedY = background.SpeedY,
+			Stretch = background.Stretch
+		};
+		return newBackground;
+	}
 }
 
 public class View
@@ -98,6 +116,29 @@ public class View
 			SpeedY = SpeedY,
 			ObjectId = data.GameObjects.NameLookupIfNotNull(ObjectId)
 		};
+		return newView;
+	}
+
+	public static View ConvertFromUnderView(UndertaleRoom.View view)
+	{
+		var newView = new View()
+		{
+			Enabled = view.Enabled,
+			ViewX = view.ViewX,
+			ViewY = view.ViewY,
+			ViewWidth = view.ViewWidth,
+			ViewHeight = view.ViewHeight,
+			PortX = view.PortX,
+			PortY = view.PortY,
+			PortWidth = view.PortWidth,
+			PortHeight = view.PortHeight,
+			BorderX = view.BorderX,
+			BorderY = view.BorderY,
+			SpeedX = view.SpeedX,
+			SpeedY = view.SpeedY,
+			ObjectId = view.ObjectId?.Name.Content
+		};
+
 		return newView;
 	}
 }
@@ -140,6 +181,26 @@ public class RoomGameObject
 		}
 		return newObj;
 	}
+
+	public static RoomGameObject ConvertFromUnderObject(UndertaleRoom.GameObject obj)
+	{
+		var newObj = new RoomGameObject()
+		{
+			X = obj.X,
+			Y = obj.Y,
+			ObjectDefinition = obj.ObjectDefinition?.Name.Content,
+			InstanceId = 0, // Not read when importing
+			CreationCode = obj.CreationCode?.Name.Content,
+			ScaleX = obj.ScaleX,
+			ScaleY = obj.ScaleY,
+			Color = obj.Color,
+			Rotation = obj.Rotation,
+			PreCreateCode = obj.PreCreateCode?.Name.Content,
+			ImageSpeed = obj.ImageSpeed,
+			ImageIndex = obj.ImageIndex
+		};
+		return newObj;
+	}
 }
 
 public class RoomTile
@@ -177,6 +238,28 @@ public class RoomTile
 			Color = Color,
 			BackgroundDefinition = data.Backgrounds.NameLookupIfNotNull(BackgroundDefinition),
 			SpriteDefinition = data.Sprites.NameLookupIfNotNull(SpriteDefinition),
+		};
+		return newTile;
+	}
+
+	public static RoomTile ConvertFromUnderTile(UndertaleRoom.Tile tile)
+	{
+		var newTile = new RoomTile()
+		{
+			SpriteMode = tile.spriteMode,
+			X = tile.X,
+			Y = tile.Y,
+			BackgroundDefinition = tile.BackgroundDefinition?.Name.Content,
+			SpriteDefinition = tile.SpriteDefinition?.Name.Content,
+			SourceX = tile.SourceX,
+			SourceY = tile.SourceY,
+			Width = tile.Width,
+			Height = tile.Height,
+			TileDepth = tile.TileDepth,
+			InstanceId = 0, // Not read when importing,
+			ScaleX = tile.ScaleX,
+			ScaleY = tile.ScaleY,
+			Color = tile.Color
 		};
 		return newTile;
 	}

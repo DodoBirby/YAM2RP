@@ -5,18 +5,18 @@ namespace YAM2RP;
 
 public class PatchAction(string yam2rpPath, string dataPath, string outputPath, bool forceOverwrite) : IYam2rpAction
 {
-	public void Run()
+	public int Run()
 	{
 		if (!File.Exists(dataPath))
 		{
 			Console.Error.WriteLine($"{dataPath} does not exist! exiting...");
-			return;
+			return 1;
 		}
 
 		if (!Directory.Exists(yam2rpPath))
 		{
 			Console.Error.WriteLine($"{yam2rpPath} does not exist! exiting...");
-			return;
+			return 1;
 		}
 
 		if (File.Exists(outputPath) && !forceOverwrite)
@@ -25,7 +25,7 @@ public class PatchAction(string yam2rpPath, string dataPath, string outputPath, 
 			if (!GetYesOrNoFromUser())
 			{
 				Console.Error.WriteLine("User chose not to overwrite, exiting...");
-				return;
+				return 1;
 			}
 		}
 
@@ -50,6 +50,7 @@ public class PatchAction(string yam2rpPath, string dataPath, string outputPath, 
 		}
 		sw.Stop();
 		Console.WriteLine($"Patching Complete in {sw.Elapsed.TotalSeconds}s");
+		return 0;
 	}
 
 	static bool GetYesOrNoFromUser()

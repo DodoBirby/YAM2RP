@@ -2,16 +2,16 @@
 
 class Program
 {
-	public static void Main(string[] args)
+	public static int Main(string[] args)
 	{
 		var parser = new CommandLineParser();
 		var action = parser.ParseArguments(args);
 		if (action is null)
 		{
 			WriteUsageText();
-			return;
+			return 1;
 		}
-		action.Run();
+		return action.Run();
 	}
 
 	static void WriteUsageText()

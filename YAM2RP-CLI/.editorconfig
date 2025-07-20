@@ -1,0 +1,7 @@
+﻿[*.cs]
+
+# IDE0005: Using directive is unnecessary.
+dotnet_diagnostic.IDE0005.severity = error
+
+# IDE0051: Remove unused private members
+dotnet_diagnostic.IDE0051.severity = error
