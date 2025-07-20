@@ -38,7 +38,7 @@ public class ObjectAction
 	public bool IsQuestion { get; set; }
 	public bool UseApplyTo { get; set; }
 	public int ExeType { get; set; }
-	public string ActionName { get; set; } = "";
+	public string? ActionName { get; set; } = "";
 	public string? CodeId { get; set; }
 	public int ArgumentCount { get; set; }
 	public int Who { get; set; }
@@ -98,8 +98,8 @@ public class ObjectAction
 			Who = eventAction.Who,
 			Relative = eventAction.Relative,
 			IsNot = eventAction.IsNot,
-			ActionName = eventAction.ActionName.Content,
-			CodeId = eventAction.CodeId.Name.Content
+			ActionName = eventAction.ActionName?.Content,
+			CodeId = eventAction.CodeId?.Name.Content
 		};
 
 		return newAction;

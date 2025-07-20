@@ -21,9 +21,24 @@ public class CommandLineParser
 
 	static IYam2rpAction? TryParseExportArgs(string[] args)
 	{
-		if (args is ["export", var assetType, var pattern, var dataPath])
+		return TryParseExportArgsWithNoOutPath(args)
+			?? TryParseExportArgsWithOutPath(args);
+	}
+
+	static IYam2rpAction? TryParseExportArgsWithNoOutPath(string[] args)
+	{
+		if (args is ["export-from", var dataPath, var assetType, var pattern])
 		{
-			return new ExportAction(assetType, pattern, dataPath);
+			return new ExportAction(assetType, dataPath, pattern, "Exports");
+		}
+		return null;
+	}
+
+	static IYam2rpAction? TryParseExportArgsWithOutPath(string[] args)
+	{
+		if (args is ["export-from", var dataPath, var assetType, var pattern, var outPath])
+		{
+			return new ExportAction(assetType, dataPath, pattern, outPath);
 		}
 		return null;
 	}
