@@ -4,13 +4,13 @@ class Program
 {
 	public static int Main(string[] args)
 	{
-		var parser = new CommandLineParser();
-		var action = parser.ParseArguments(args);
-		if (action is null)
+		if (args.Length == 0)
 		{
 			WriteUsageText();
 			return 1;
 		}
+		var parser = new CommandLineParser();
+		var action = parser.ParseArguments(args);
 		return action.Run();
 	}
 

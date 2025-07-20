@@ -6,18 +6,7 @@ public class ExportAction(string assetType, string dataPath, string pattern, str
 {
 	public int Run()
 	{
-		if (assetType != "room" && assetType != "object")
-		{
-			Console.Error.WriteLine($"Cannot export asset type {assetType}! Only room and object are supported");
-			return 1;
-		}
-
-		if (pattern.Count(x => x == '*') > 1)
-		{
-			Console.Error.WriteLine("Only 1 '*' character is supported in patterns");
-			return 1;
-		}
-
+		Console.WriteLine("Running Export command...");
 		UndertaleData data;
 		using (var fs = File.OpenRead(dataPath))
 		{
@@ -79,5 +68,10 @@ public class ExportAction(string assetType, string dataPath, string pattern, str
 				ObjectExporter.ExportGameObject(data, obj, combinedOutPath);
 			}
 		}
+	}
+
+	public IYam2rpAction Chain(Func<IYam2rpAction> next)
+	{
+		return this;
 	}
 }

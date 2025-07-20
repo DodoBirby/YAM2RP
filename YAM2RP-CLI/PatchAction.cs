@@ -7,15 +7,17 @@ public class PatchAction(string yam2rpPath, string dataPath, string outputPath, 
 {
 	public int Run()
 	{
+		Console.WriteLine("Running Patch command...");
+
 		if (!File.Exists(dataPath))
 		{
-			Console.Error.WriteLine($"{dataPath} does not exist! exiting...");
+			Console.Error.WriteLine($"data.win path {dataPath} does not exist! exiting...");
 			return 1;
 		}
 
 		if (!Directory.Exists(yam2rpPath))
 		{
-			Console.Error.WriteLine($"{yam2rpPath} does not exist! exiting...");
+			Console.Error.WriteLine($"YAM2RP project path {yam2rpPath} does not exist! exiting...");
 			return 1;
 		}
 
@@ -68,5 +70,10 @@ public class PatchAction(string yam2rpPath, string dataPath, string outputPath, 
 			}
 			Console.WriteLine("Must type a Y or N");
 		}
+	}
+
+	public IYam2rpAction Chain(Func<IYam2rpAction> next)
+	{
+		return this;
 	}
 }
